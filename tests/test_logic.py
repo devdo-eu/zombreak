@@ -192,6 +192,34 @@ def test_end_active_player_turn_no_zombies():
     assert len(gs.players[2].supplies) == 3
 
 
+def test_end_active_player_turn_no_supplies_more_in_graveyard():
+    gs = logic.GameState()
+    gs.players = [logic.PlayerShelter(), logic.PlayerShelter(), logic.PlayerShelter()]
+    for player in gs.players:
+        player.survivors.append(['survivor', 'zombie'])
+    gs.active_player = gs.players[2]
+    gs.supply_deck = ['axe']
+    gs.supply_graveyard = ['alarm', 'drone']
+    gs.end_active_player_turn()
+    assert gs.active_player == gs.players[0]
+    assert len(gs.players[2].supplies) == 3
+    assert len(gs.supply_graveyard) == 0
+
+
+def test_end_active_player_turn_no_supplies():
+    gs = logic.GameState()
+    gs.players = [logic.PlayerShelter(), logic.PlayerShelter(), logic.PlayerShelter()]
+    for player in gs.players:
+        player.survivors.append(['survivor', 'zombie'])
+    gs.active_player = gs.players[2]
+    gs.supply_deck = []
+    gs.supply_graveyard = []
+    gs.end_active_player_turn()
+    assert gs.active_player == gs.players[0]
+    assert len(gs.players[2].supplies) == 0
+    assert len(gs.supply_graveyard) == 0
+
+
 def test_end_active_player_turn_zombies_no_obstacles():
     gs = logic.GameState()
     gs.players = [logic.PlayerShelter(), logic.PlayerShelter(), logic.PlayerShelter()]
