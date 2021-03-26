@@ -3,6 +3,7 @@ import logic
 
 def test_game_state_ctor():
     gs = logic.GameState()
+    assert not gs.finished
     assert type(gs.city_deck) is list
     assert type(gs.supply_deck) is list
     assert type(gs.city_graveyard) is list
@@ -26,11 +27,14 @@ def test_prepare_supply_deck():
 def test_player_shelter_class():
     shelter = logic.PlayerShelter()
     assert shelter.name == ''
+    assert not shelter.defeated
     assert len(shelter.zombies) == 0
     assert len(shelter.supplies) == 0
+    assert len(shelter.obstacles) == 0
     assert len(shelter.survivors) == 0
     assert type(shelter.zombies) is list
     assert type(shelter.supplies) is list
+    assert type(shelter.obstacles) is list
     assert type(shelter.survivors) is list
 
 
@@ -155,3 +159,34 @@ def test_horde_show_up_second_time():
     assert len(gs.players[1].zombies) == 2
     assert len(gs.players[2].zombies) == 1
     assert len(gs.active_player.zombies) == 1
+
+
+def test_get_supplies():
+    gs = logic.GameState()
+    gs.active_player = logic.PlayerShelter()
+    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.get_supplies()
+    assert len(gs.supply_deck) == 1
+    assert gs.supply_deck[0] == 'gun'
+    assert len(gs.active_player.supplies) == 3
+
+    gs = logic.GameState()
+    gs.active_player = logic.PlayerShelter()
+    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.active_player.supplies = ['radio', 'drone']
+    gs.get_supplies()
+    assert len(gs.supply_deck) == 3
+    assert gs.supply_deck[0] == 'alarm'
+    assert len(gs.active_player.supplies) == 3
+
+
+def test_end_active_player_turn_no_zombies():
+    gs = logic.GameState()
+    gs.players = [logic.PlayerShelter(), logic.PlayerShelter(), logic.PlayerShelter()]
+    for player in gs.players:
+        player.survivors.append('survivor')
+    gs.active_player = gs.players[2]
+    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.end_active_player_turn()
+    assert gs.active_player == gs.players[0]
+    assert len(gs.players[2].supplies) == 3

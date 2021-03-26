@@ -6,7 +6,9 @@ class PlayerShelter:
         self.name = name
         self.survivors = []
         self.supplies = []
+        self.obstacles = []
         self.zombies = []
+        self.defeated = False
 
 
 class GameState:
@@ -17,6 +19,7 @@ class GameState:
         self.supply_graveyard = []
         self.players = []
         self.active_player = None
+        self.finished = False
 
     def prepare_city_deck(self):
         horde = ['horde'] * 2
@@ -44,10 +47,24 @@ class GameState:
         card = self.city_deck.pop(0)
         return card
 
+    def shuffle_supply_graveyard(self):
+        new_supplies = self.supply_graveyard
+        shuffle(new_supplies)
+        self.supply_graveyard = []
+        self.supply_deck = self.supply_deck + new_supplies
+
+    def get_supply_card(self):
+        if len(self.supply_deck) < 1:
+            self.shuffle_supply_graveyard()
+        if len(self.supply_deck) < 1:
+            return None
+        card = self.supply_deck.pop(0)
+        return card
+
     def prepare_supply_deck(self):
         defense = ['alarm'] * 2 + ['mine field'] * 2 + ['barricades'] * 4
         summons = ['radio'] * 4 + ['megaphone'] * 4 + ['flare gun'] * 3
-        counters = ['sacrifice'] * 2 + ['drones'] * 6 + ['lure out'] * 7 + ['destroy defence'] * 2 +\
+        counters = ['sacrifice'] * 2 + ['drone'] * 6 + ['lure out'] * 7 + ['destroy defence'] * 2 +\
                    ['takeover'] * 2 + ['swap shelter'] * 2
         killers = ['sniper rifle'] * 2 + ['shotgun'] * 6 + ['axe'] * 3 + ['gun'] * 4
         supply_deck = defense + summons + counters + killers
@@ -73,9 +90,9 @@ class GameState:
         self.active_player.zombies.append(card[0])
 
     def event_horde(self, second=False):
-        index = self.players.index(self.active_player)
-        helper_table = self.players + self.players
-        helper_table = helper_table[index + 1: index + len(self.players) + 1]
+        index = self.players_still_in_game.index(self.active_player)
+        helper_table = self.players_still_in_game + self.players_still_in_game
+        helper_table = helper_table[index + 1: index + len(self.players_still_in_game) + 1]
 
         for player in helper_table:
             card = self.get_city_card()
@@ -89,3 +106,28 @@ class GameState:
                     player.zombies.append(card[1])
             else:
                 player.zombies.append(card[1])
+
+    def get_supplies(self):
+        how_many = len(self.active_player.supplies)
+        for _ in range(how_many, 3):
+            card = self.get_supply_card()
+            if card is None:
+                break
+            self.active_player.supplies.append(card)
+
+    @property
+    def players_still_in_game(self):
+        return [player for player in self.players if not player.defeated]
+
+    def end_active_player_turn(self):
+        if len(self.active_player.zombies) != 0:
+            pass
+        if len(self.active_player.survivors) == 0:
+            self.active_player.defeated = True
+            self.supply_graveyard += self.active_player.supplies + self.active_player.obstacles
+            self.city_graveyard += self.active_player.zombies
+        else:
+            self.get_supplies()
+        index = self.players.index(self.active_player)
+        helper_table = self.players_still_in_game + self.players_still_in_game
+        self.active_player = helper_table[index + 1]
