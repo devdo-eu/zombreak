@@ -21,6 +21,10 @@ class GameState:
         self.active_player = None
         self.finished = False
 
+    @property
+    def players_still_in_game(self):
+        return [player for player in self.players if not player.defeated]
+
     def prepare_city_deck(self):
         horde = ['horde'] * 2
         zombie = ['zombie'] * 23
@@ -34,7 +38,13 @@ class GameState:
         self.city_deck = deck
 
     def shuffle_city_graveyard(self):
-        new_city = self.city_graveyard
+        new_city = []
+        for card in self.city_graveyard:
+            if card[0] == 'survivor':
+                new_city.append(card)
+            else:
+                card[0], card[1] = card[1], card[0]
+                new_city.append(card)
         shuffle(new_city)
         self.city_graveyard = []
         self.city_deck = self.city_deck + new_city
@@ -87,7 +97,7 @@ class GameState:
             self.city_graveyard.append(card)
             return
 
-        self.active_player.zombies.append(card[0])
+        self.active_player.zombies.append(card)
 
     def event_horde(self, second=False):
         index = self.players_still_in_game.index(self.active_player)
@@ -98,14 +108,16 @@ class GameState:
             card = self.get_city_card()
             if card is None or (second and player == self.active_player):
                 continue
-            if card[1] == 'horde':
+            card[0], card[1] = card[1], card[0]
+            if card[0] == 'horde':
                 self.event_horde(True)
                 self.city_graveyard.append(card)
                 card = self.get_city_card()
                 if card is not None:
-                    player.zombies.append(card[1])
+                    card[0], card[1] = card[1], card[0]
+                    player.zombies.append(card)
             else:
-                player.zombies.append(card[1])
+                player.zombies.append(card)
 
     def get_supplies(self):
         how_many = len(self.active_player.supplies)
@@ -115,19 +127,29 @@ class GameState:
                 break
             self.active_player.supplies.append(card)
 
-    @property
-    def players_still_in_game(self):
-        return [player for player in self.players if not player.defeated]
+    def activate_obstacle(self, obstacle):
+        pass
+
+    def clean_up_shelter(self, shelter):
+        self.supply_graveyard += shelter.supplies + shelter.obstacles
+        self.city_graveyard += shelter.zombies + shelter.survivors
+        shelter.supplies, shelter.obstacles, shelter.zombies, shelter.survivors = [], [], [], []
 
     def end_active_player_turn(self):
+        index = self.players.index(self.active_player)
         if len(self.active_player.zombies) != 0:
-            pass
+            for obstacle in self.active_player.obstacles:
+                self.activate_obstacle(obstacle)
+            for _ in self.active_player.zombies:
+                if len(self.active_player.survivors) > 0:
+                    card = self.active_player.survivors.pop()
+                    self.city_graveyard.append(card)
+
         if len(self.active_player.survivors) == 0:
             self.active_player.defeated = True
-            self.supply_graveyard += self.active_player.supplies + self.active_player.obstacles
-            self.city_graveyard += self.active_player.zombies
+            index -= 1
+            self.clean_up_shelter(self.active_player)
         else:
             self.get_supplies()
-        index = self.players.index(self.active_player)
         helper_table = self.players_still_in_game + self.players_still_in_game
         self.active_player = helper_table[index + 1]
