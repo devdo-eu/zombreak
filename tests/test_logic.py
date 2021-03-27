@@ -43,7 +43,7 @@ def test_player_shelter_class():
 def test_city_card_ctor_exception():
     thrown = False
     try:
-        _survivor = CityCard(ZombieType.SURVIVOR)
+        CityCard(ZombieType.SURVIVOR)
     except Exception as ex:
         assert str(ex) == 'Card cannot be init with survivor on top!'
         thrown = True
