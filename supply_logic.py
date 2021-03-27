@@ -219,6 +219,7 @@ def defend_with_mine_field(game_state):
         big_inside, lesser_counter = count_zombies(game_state)
         if len(shelter.zombies) < (3 - count) or (big_inside and lesser_counter == 0) or not big_inside:
             shelter.print(f'{str(shelter.zombies[0].top.value).capitalize()} was wiped out in a mine explosion!')
+            shelter.print(f'The sounds of the {Supply.MINE_FILED.value} could be heard from miles away!')
             put_zombie_on_graveyard(game_state, shelter.zombies[0])
         elif big_inside and lesser_counter > 0:
             message = 'What survivors should do [0/1]?\n' \
@@ -232,6 +233,7 @@ def defend_with_mine_field(game_state):
             for zombie in shelter.zombies:
                 if zombie.top in zombie_type:
                     shelter.print(f'{str(zombie.top.value).capitalize()} was wiped out in a mine explosion!')
+                    shelter.print(f'The sounds of the {Supply.MINE_FILED.value} could be heard from miles away!')
                     put_zombie_on_graveyard(game_state, zombie)
                     break
     put_supplies_on_graveyard(game_state, Supply.MINE_FILED, obstacle=True)
@@ -298,3 +300,42 @@ def play_drone(game_state):
                 rivals[int(action)].zombies.append(zombie)
                 break
     put_supplies_on_graveyard(game_state, Supply.DRONE)
+
+
+def play_chainsaw(game_state):
+    shelter = game_state.active_player
+    rivals = []
+    choice_message = ''
+    possible_actions = []
+    for rival in game_state.players:
+        if rival != shelter and not rival.defeated and len(rival.obstacles) > 0:
+            rivals.append(rival)
+    for index, rival in enumerate(rivals):
+        choice_message += f'[{index}]: {rival.name} shelter\n'
+        possible_actions.append(str(index))
+    if len(rivals) > 0:
+        message = f'Where survivor should use {Supply.CHAINSAW.value} to destroy fortifications?\n' + choice_message
+        action = get_action(game_state, message, possible_actions)
+        rival = rivals[int(action)]
+        shelter.print(f'Survivor successfully destroyed all defence at {rival.name} shelter!')
+        for _ in range(len(rival.obstacles)):
+            obstacle = rival.obstacles[0]
+            rival.obstacles.remove(obstacle)
+            game_state.supply_graveyard.append(obstacle)
+    shelter.print(f'The sounds of the {Supply.CHAINSAW.value} could be heard from miles away!')
+    put_supplies_on_graveyard(game_state, Supply.CHAINSAW)
+
+
+def play_takeover(game_state):
+    shelter = game_state.active_player
+    choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
+    message = 'From which shelter lure a survivor to join us?\n' + choice_message
+    action = get_action(game_state, message, possible_actions)
+    rival = rivals[int(action)]
+    survivor_card = rival.survivors[0]
+    rival.survivors.remove(survivor_card)
+    if len(rival.survivors) == 0:
+        shelter.print(f'No one was left in {rival.name} shelter...')
+        rival.defeated = True
+    shelter.survivors.append(survivor_card)
+    put_supplies_on_graveyard(game_state, Supply.TAKEOVER)

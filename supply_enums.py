@@ -13,7 +13,7 @@ class Supply(Enum):
     DRONE = 'drone'
     LURE_OUT = 'lure zombie out'
     CHAINSAW = 'chainsaw'
-    TAKEOVER = 'takeover survivor'
+    TAKEOVER = 'tempting stocks'
     SWAP = 'swap shelter'
     SNIPER = 'sniper rifle'
     SHOTGUN = 'shotgun'

@@ -467,6 +467,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 1
     assert len(gs.city_graveyard) == 2
+    assert len(outputs) == 5
 
     gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['0']))
     shelter = gs.active_player
@@ -478,6 +479,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 2
     assert len(gs.city_graveyard) == 4
+    assert len(outputs) == 5
 
     gs.active_player = PlayerShelter(print_foo=dumper_factory(),
                                      input_foo=helper_factory(['1', '1']))
@@ -490,6 +492,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 3
     assert len(gs.city_graveyard) == 6
+    assert len(outputs) == 5
 
     gs.active_player = PlayerShelter(print_foo=dumper_factory(),
                                      input_foo=helper_factory(['1', '0']))
@@ -502,6 +505,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 4
     assert len(gs.city_graveyard) == 8
+    assert len(outputs) == 5
 
 
 def test_play_sacrifice(gs, fast_zombie, zombie, big_zombie):
@@ -592,5 +596,52 @@ def test_play_drone_only_lesser_one_rival(gs, big_zombie):
     assert len(shelter.supplies) == 0
     assert len(gs.players[1].zombies) == 0
     assert len(gs.players[2].zombies) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_chainsaw(gs):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    gs.players[1].obstacles = [Supply.ALARM, Supply.BARRICADES, Supply.BARRICADES]
+    gs.players[2].obstacles = [Supply.MINE_FILED]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0'])
+    shelter.supplies = [Supply.CHAINSAW]
+    supply_logic.play_chainsaw(gs)
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[1].obstacles) == 0
+    assert len(gs.players[2].obstacles) == 1
+    assert len(gs.supply_graveyard) == 4
+    assert len(outputs) == 3
+
+
+def test_play_chainsaw_no_one_has_defence(gs):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.supplies = [Supply.CHAINSAW]
+    supply_logic.play_chainsaw(gs)
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_takeover(gs):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0'])
+    shelter.supplies = [Supply.TAKEOVER]
+    gs.players[1].survivors = [CityCard()]
+    gs.players[2].survivors = [CityCard()]
+    supply_logic.play_takeover(gs)
+    assert len(shelter.survivors) == 1
+    assert len(gs.players[1].survivors) == 0
+    assert gs.players[1].defeated
+    assert len(gs.players[2].survivors) == 1
     assert len(gs.supply_graveyard) == 1
     assert len(outputs) == 2
