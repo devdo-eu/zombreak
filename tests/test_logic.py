@@ -1,5 +1,6 @@
 from logic import GameState, PlayerShelter, CityCard
-from zombie_types import ZombieType
+from zombie_enums import ZombieType
+from supply_enums import Supply
 
 
 def test_game_state_ctor():
@@ -42,7 +43,7 @@ def test_player_shelter_class():
 def test_city_card_ctor_exception():
     thrown = False
     try:
-        survivor = CityCard(ZombieType.SURVIVOR)
+        _survivor = CityCard(ZombieType.SURVIVOR)
     except Exception as ex:
         assert str(ex) == 'Card cannot be init with survivor on top!'
         thrown = True
@@ -181,19 +182,19 @@ def test_horde_show_up_second_time():
 def test_get_supplies():
     gs = GameState()
     gs.active_player = PlayerShelter()
-    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.supply_deck = [Supply.AXE, Supply.ALARM, Supply.AXE, Supply.GUN]
     gs.get_supplies()
     assert len(gs.supply_deck) == 1
-    assert gs.supply_deck[0] == 'gun'
+    assert gs.supply_deck[0] == Supply.GUN
     assert len(gs.active_player.supplies) == 3
 
     gs = GameState()
     gs.active_player = PlayerShelter()
-    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
-    gs.active_player.supplies = ['radio', 'drone']
+    gs.supply_deck = [Supply.AXE, Supply.ALARM, Supply.AXE, Supply.GUN]
+    gs.active_player.supplies = [Supply.RADIO, Supply.DRONE]
     gs.get_supplies()
     assert len(gs.supply_deck) == 3
-    assert gs.supply_deck[0] == 'alarm'
+    assert gs.supply_deck[0] == Supply.ALARM
     assert len(gs.active_player.supplies) == 3
 
 
@@ -205,7 +206,7 @@ def test_end_active_player_turn_no_zombies():
     for player in gs.players:
         player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
-    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.supply_deck = [Supply.AXE, Supply.ALARM, Supply.AXE, Supply.GUN]
     gs.end_active_player_turn()
     assert gs.active_player == gs.players[0]
     assert len(gs.players[2].supplies) == 3
@@ -219,8 +220,8 @@ def test_end_active_player_turn_no_supplies_more_in_graveyard():
     for player in gs.players:
         player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
-    gs.supply_deck = ['axe']
-    gs.supply_graveyard = ['alarm', 'drone']
+    gs.supply_deck = [Supply.AXE]
+    gs.supply_graveyard = [Supply.ALARM, Supply.DRONE]
     gs.end_active_player_turn()
     assert gs.active_player == gs.players[0]
     assert len(gs.players[2].supplies) == 3
@@ -251,11 +252,11 @@ def test_end_active_player_turn_zombies_no_obstacles():
     for player in gs.players:
         player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
-    gs.active_player.supplies = ['axe', 'alarm']
-    zombie_card = CityCard('zombie')
+    gs.active_player.supplies = [Supply.AXE, Supply.ALARM]
+    zombie_card = CityCard(ZombieType.ZOMBIE)
     zombie_card.flip()
     gs.active_player.zombies = [zombie_card]
-    gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
+    gs.supply_deck = [Supply.AXE, Supply.ALARM, Supply.AXE, Supply.GUN]
     gs.end_active_player_turn()
     assert gs.active_player == gs.players[0]
     assert len(gs.players[2].supplies) == 0

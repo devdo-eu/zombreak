@@ -1,5 +1,6 @@
 from random import shuffle
-from zombie_types import ZombieType
+from zombie_enums import ZombieType
+from supply_enums import Supply, SupplyType
 
 
 class PlayerShelter:
@@ -80,12 +81,10 @@ class GameState:
         return card
 
     def prepare_supply_deck(self):
-        defense = ['alarm'] * 2 + ['mine field'] * 2 + ['barricades'] * 4
-        summons = ['radio'] * 4 + ['megaphone'] * 4 + ['flare gun'] * 3
-        counters = ['sacrifice'] * 2 + ['drone'] * 6 + ['lure out'] * 7 + ['destroy defence'] * 2 +\
-                   ['takeover'] * 2 + ['swap shelter'] * 2
-        killers = ['sniper rifle'] * 2 + ['shotgun'] * 6 + ['axe'] * 3 + ['gun'] * 4
-        supply_deck = defense + summons + counters + killers
+        quantity = [2, 2, 4, 4, 4, 3, 2, 6, 7, 2, 2, 2, 2, 6, 4, 3]
+        supply_deck = []
+        for index, supply in enumerate(Supply):
+            supply_deck += [supply] * quantity[index]
         shuffle(supply_deck)
         self.supply_deck = supply_deck
 
