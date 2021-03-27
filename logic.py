@@ -11,6 +11,16 @@ class PlayerShelter:
         self.defeated = False
 
 
+class CityCard:
+    def __init__(self, zombie='zombie'):
+        self.active = True
+        self.top = 'survivor'
+        self.bottom = zombie
+
+    def flip(self):
+        self.top, self.bottom = self.bottom, self.top
+
+
 class GameState:
     def __init__(self):
         self.city_deck = []
@@ -26,25 +36,20 @@ class GameState:
         return [player for player in self.players if not player.defeated]
 
     def prepare_city_deck(self):
-        horde = ['horde'] * 2
-        zombie = ['zombie'] * 23
-        fast = ['fast zombie'] * 18
-        big = ['big zombie'] * 12
-        zombies = horde + zombie + fast + big
-        deck = []
-        for card in zombies:
-            deck.append(['survivor', card])
+        horde = [CityCard('horde') for _ in range(2)]
+        zombie = [CityCard('zombie') for _ in range(23)]
+        fast = [CityCard('fast zombie') for _ in range(18)]
+        big = [CityCard('big zombie') for _ in range(12)]
+        deck = horde + zombie + fast + big
         shuffle(deck)
         self.city_deck = deck
 
     def shuffle_city_graveyard(self):
         new_city = []
         for card in self.city_graveyard:
-            if card[0] == 'survivor':
-                new_city.append(card)
-            else:
-                card[0], card[1] = card[1], card[0]
-                new_city.append(card)
+            if card.top != 'survivor':
+                card.flip()
+            new_city.append(card)
         shuffle(new_city)
         self.city_graveyard = []
         self.city_deck = self.city_deck + new_city
@@ -86,13 +91,13 @@ class GameState:
         if card is None:
             return
 
-        if card[0] == 'survivor' and card[1] not in ['fast zombie', 'horde']:
-            card[0], card[1] = card[1], card[0]
+        if card.top == 'survivor' and card.bottom not in ['fast zombie', 'horde']:
+            card.flip()
             self.city_deck = [card] + self.city_deck
             return
-        elif card[1] == 'fast zombie':
-            card[0], card[1] = card[1], card[0]
-        elif card[1] == 'horde':
+        elif card.bottom == 'fast zombie':
+            card.flip()
+        elif card.bottom == 'horde':
             self.event_horde()
             self.city_graveyard.append(card)
             return
@@ -108,13 +113,13 @@ class GameState:
             card = self.get_city_card()
             if card is None or (second and player == self.active_player):
                 continue
-            card[0], card[1] = card[1], card[0]
-            if card[0] == 'horde':
+            card.flip()
+            if card.top == 'horde':
                 self.event_horde(True)
                 self.city_graveyard.append(card)
                 card = self.get_city_card()
                 if card is not None:
-                    card[0], card[1] = card[1], card[0]
+                    card.flip()
                     player.zombies.append(card)
             else:
                 player.zombies.append(card)
@@ -140,8 +145,8 @@ class GameState:
         if len(self.active_player.zombies) != 0:
             for obstacle in self.active_player.obstacles:
                 self.activate_obstacle(obstacle)
-            for _ in self.active_player.zombies:
-                if len(self.active_player.survivors) > 0:
+            for zombie in self.active_player.zombies:
+                if len(self.active_player.survivors) > 0 and zombie.active:
                     card = self.active_player.survivors.pop()
                     self.city_graveyard.append(card)
 
