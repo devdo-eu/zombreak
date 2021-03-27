@@ -24,7 +24,9 @@ def play_weapon(game_state, weapon, strong=False, destroyed=True):
                     kill_zombie(shelter, supply, zombie_card, destroyed)
                     used = True
     if not used:
-        shelter.print(f'Zombies inside shelter are too tough for an {weapon.value}!')
+        shelter.print(f'One of survivors used {weapon.value} for nothing!')
+        shelter.print(f'{str(weapon.value).capitalize()} has been destroyed!')
+        shelter.supplies.remove(weapon)
 
 
 def kill_zombie(shelter, supply, zombie_card, destroyed):
@@ -123,3 +125,35 @@ def play_sniper_rifle(game_state):
             play_weapon(game_state, Supply.SNIPER, strong=True)
         else:
             play_weapon(game_state, Supply.SNIPER)
+
+
+def play_summon(game_state, summon):
+    shelter = game_state.active_player
+    arrives = 1
+    if summon == Supply.FLARE_GUN:
+        arrives = 2
+    shelter.print(f'One of survivors used {summon.value}!')
+    if is_loud(summon):
+        shelter.print(f'The sounds of the {summon.value} could be heard from miles away!')
+    for _ in range(arrives):
+        if len(game_state.city_deck) > 0 and game_state.city_deck[0].top == ZombieType.SURVIVOR:
+            card = game_state.get_city_card()
+            shelter.print('New survivor has arrived at your shelter!')
+            shelter.survivors.append(card)
+        else:
+            shelter.print('Nobody else arrived...')
+            break
+    shelter.print(f'{str(summon.value).capitalize()} has been destroyed!')
+    shelter.supplies.remove(summon)
+
+
+def play_radio(game_state):
+    play_summon(game_state, Supply.RADIO)
+
+
+def play_megaphone(game_state):
+    play_summon(game_state, Supply.MEGAPHONE)
+
+
+def play_flare_gun(game_state):
+    play_summon(game_state, Supply.FLARE_GUN)

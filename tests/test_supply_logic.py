@@ -55,10 +55,10 @@ def test_play_axe():
     assert len(outputs) == 4
 
     supply_logic.play_axe(gs)
-    assert len(shelter.supplies) == 1
+    assert len(shelter.supplies) == 0
     assert len(shelter.zombies) == 1
     assert big_zombie in shelter.zombies
-    assert len(outputs) == 5
+    assert len(outputs) == 6
 
 
 def test_play_gun():
@@ -80,10 +80,10 @@ def test_play_gun():
     assert len(outputs) == 6
 
     supply_logic.play_gun(gs)
-    assert len(shelter.supplies) == 1
+    assert len(shelter.supplies) == 0
     assert len(shelter.zombies) == 1
     assert big_zombie in shelter.zombies
-    assert len(outputs) == 7
+    assert len(outputs) == 8
 
 
 def test_play_shotgun_one_big():
@@ -268,3 +268,81 @@ def test_play_sniper_rifle_lesser_and_big_zombies():
     assert fast_zombie not in shelter.zombies
     assert len(shelter.supplies) == 0
     assert len(outputs) == 2
+
+
+def test_play_radio():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = [CityCard()]
+    shelter.supplies = [Supply.RADIO]
+    supply_logic.play_radio(gs)
+    assert len(shelter.survivors) == 1
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 3
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    shelter.supplies = [Supply.RADIO]
+    supply_logic.play_radio(gs)
+    assert len(shelter.survivors) == 0
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 3
+
+
+def test_play_megaphone():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = [CityCard()]
+    shelter.supplies = [Supply.MEGAPHONE]
+    supply_logic.play_megaphone(gs)
+    assert len(shelter.survivors) == 1
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 4
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = []
+    shelter.supplies = [Supply.MEGAPHONE]
+    supply_logic.play_megaphone(gs)
+    assert len(shelter.survivors) == 0
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 4
+
+
+def test_play_flare_gun():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = [CityCard()]
+    shelter.supplies = [Supply.FLARE_GUN]
+    supply_logic.play_flare_gun(gs)
+    assert len(shelter.survivors) == 1
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 5
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = [CityCard(), CityCard()]
+    shelter.supplies = [Supply.FLARE_GUN]
+    supply_logic.play_flare_gun(gs)
+    assert len(shelter.survivors) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 5
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    gs.city_deck = []
+    shelter.supplies = [Supply.FLARE_GUN]
+    supply_logic.play_flare_gun(gs)
+    assert len(shelter.survivors) == 0
+    assert len(shelter.supplies) == 0
+    assert len(gs.city_deck) == 0
+    assert len(outputs) == 4
