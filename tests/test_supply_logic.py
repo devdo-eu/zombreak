@@ -180,3 +180,91 @@ def test_play_shotgun_many_lesser_one_big_wrong_input():
     assert big_zombie not in shelter.zombies
     assert len(shelter.supplies) == 0
     assert len(outputs) == 5
+
+
+def test_play_sniper_rifle_on_city():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['y']))
+    shelter = gs.active_player
+    gs.city_deck = [zombie, CityCard()]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(gs.city_deck) == 1
+    assert zombie not in gs.city_deck
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 3
+
+
+def test_play_sniper_rifle_zombie_in_city_and_shelter():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['y']))
+    shelter = gs.active_player
+    shelter.zombies = [big_zombie, zombie]
+    gs.city_deck = [zombie, CityCard()]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(gs.city_deck) == 1
+    assert len(shelter.zombies) == 2
+    assert zombie not in gs.city_deck
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 3
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['n', '0']))
+    shelter = gs.active_player
+    shelter.zombies = [big_zombie, zombie]
+    gs.city_deck = [zombie, CityCard()]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(gs.city_deck) == 2
+    assert len(shelter.zombies) == 1
+    assert big_zombie not in shelter.zombies
+    assert zombie in gs.city_deck
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 2
+
+
+def test_play_sniper_rifle_big_zombies():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    shelter.zombies = [big_zombie, big_zombie]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(shelter.zombies) == 1
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 2
+
+
+def test_play_sniper_rifle_lesser_zombies():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory())
+    shelter = gs.active_player
+    shelter.zombies = [fast_zombie, zombie]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(shelter.zombies) == 1
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 2
+
+
+def test_play_sniper_rifle_lesser_and_big_zombies():
+    gs = GameState()
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['0']))
+    shelter = gs.active_player
+    shelter.zombies = [fast_zombie, big_zombie]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(shelter.zombies) == 1
+    assert big_zombie not in shelter.zombies
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 2
+
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['1']))
+    shelter = gs.active_player
+    shelter.zombies = [fast_zombie, big_zombie]
+    shelter.supplies = [Supply.SNIPER]
+    supply_logic.play_sniper_rifle(gs)
+    assert len(shelter.zombies) == 1
+    assert fast_zombie not in shelter.zombies
+    assert len(shelter.supplies) == 0
+    assert len(outputs) == 2
