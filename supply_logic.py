@@ -233,3 +233,29 @@ def defend_with_mine_field(game_state):
                     put_zombie_on_graveyard(game_state, zombie)
                     break
     put_supplies_on_graveyard(game_state, Supply.MINE_FILED, obstacle=True)
+
+
+def play_sacrifice(game_state):
+    shelter = game_state.active_player
+    survivor_card = shelter.survivors[0]
+    shelter.survivors.remove(survivor_card)
+    game_state.city_graveyard.append(survivor_card)
+    rivals = []
+    choice_message = ''
+    possible_actions = []
+    for rival in game_state.players:
+        if rival != shelter:
+            rivals.append(rival)
+
+    for index, rival in enumerate(rivals):
+        choice_message += f'[{index}]: {rival.name} shelter\n'
+        possible_actions.append(str(index))
+
+    for _ in range(len(shelter.zombies)):
+        zombie_card = shelter.zombies[0]
+        message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
+        action = get_action(game_state, message, possible_actions)
+        shelter.zombies.remove(zombie_card)
+        rivals[int(action)].zombies.append(zombie_card)
+    shelter.print('One of survivors sacrificed himself in a heroic act and led all the zombies out of the shelter!')
+    put_supplies_on_graveyard(game_state, Supply.SACRIFICE)

@@ -502,3 +502,23 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 4
     assert len(gs.city_graveyard) == 8
+
+
+def test_play_sacrifice(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[1]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0', '1', '0'])
+    shelter.zombies = [zombie, big_zombie, fast_zombie]
+    shelter.survivors = [CityCard(), CityCard()]
+    shelter.supplies = [Supply.SACRIFICE]
+    supply_logic.play_sacrifice(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.survivors) == 1
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[0].zombies) == 2
+    assert len(gs.players[2].zombies) == 1
+    assert big_zombie in gs.players[2].zombies
+    assert len(gs.city_graveyard) == 1
+    assert len(gs.supply_graveyard) == 1
