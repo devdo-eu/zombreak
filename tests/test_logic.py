@@ -1,4 +1,5 @@
 from logic import GameState, PlayerShelter, CityCard
+from zombie_types import ZombieType
 
 
 def test_game_state_ctor():
@@ -38,27 +39,37 @@ def test_player_shelter_class():
     assert type(shelter.survivors) is list
 
 
+def test_city_card_ctor_exception():
+    thrown = False
+    try:
+        survivor = CityCard(ZombieType.SURVIVOR)
+    except Exception as ex:
+        assert str(ex) == 'Card cannot be init with survivor on top!'
+        thrown = True
+    assert thrown
+
+
 def test_zombie_show_up():
     gs = GameState()
     gs.active_player = PlayerShelter()
-    gs.city_deck = [CityCard('zombie')]
+    gs.city_deck = [CityCard(ZombieType.ZOMBIE)]
     gs.zombie_show_up()
-    assert gs.city_deck[0].top == 'zombie'
-    assert gs.city_deck[0].bottom == 'survivor'
+    assert gs.city_deck[0].top == ZombieType.ZOMBIE
+    assert gs.city_deck[0].bottom == ZombieType.SURVIVOR
     assert len(gs.city_deck) == 1
     gs.zombie_show_up()
     assert len(gs.active_player.zombies) == 1
-    assert gs.active_player.zombies[0].top == 'zombie'
+    assert gs.active_player.zombies[0].top == ZombieType.ZOMBIE
     assert len(gs.city_deck) == 0
 
-    gs.city_deck = [CityCard('big zombie')]
+    gs.city_deck = [CityCard(ZombieType.BIG)]
     gs.zombie_show_up()
-    assert gs.city_deck[0].top == 'big zombie'
-    assert gs.city_deck[0].bottom == 'survivor'
+    assert gs.city_deck[0].top == ZombieType.BIG
+    assert gs.city_deck[0].bottom == ZombieType.SURVIVOR
     assert len(gs.city_deck) == 1
     gs.zombie_show_up()
     assert len(gs.active_player.zombies) == 2
-    assert gs.active_player.zombies[1].top == 'big zombie'
+    assert gs.active_player.zombies[1].top == ZombieType.BIG
     assert len(gs.city_deck) == 0
 
 
@@ -73,10 +84,10 @@ def test_zombie_show_up_empty_city():
 def test_fast_zombie_show_up():
     gs = GameState()
     gs.active_player = PlayerShelter()
-    gs.city_deck = [CityCard('fast zombie')]
+    gs.city_deck = [CityCard(ZombieType.FAST)]
     gs.zombie_show_up()
     assert len(gs.active_player.zombies) == 1
-    assert gs.active_player.zombies[0].top == 'fast zombie'
+    assert gs.active_player.zombies[0].top == ZombieType.FAST
     assert len(gs.city_deck) == 0
 
 
@@ -84,8 +95,10 @@ def test_horde_show_up():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[1]
-    gs.city_deck = [CityCard('horde'), CityCard('zombie'), CityCard('zombie'), CityCard('zombie'),
-                    CityCard('zombie'), CityCard('zombie'), CityCard('zombie'), CityCard('zombie')]
+    horde = ZombieType.HORDE
+    zombie = ZombieType.ZOMBIE
+    gs.city_deck = [CityCard(horde), CityCard(zombie), CityCard(zombie), CityCard(zombie),
+                    CityCard(zombie), CityCard(zombie), CityCard(zombie), CityCard(zombie)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 4
     assert len(gs.players[0].zombies) == 1
@@ -98,7 +111,7 @@ def test_horde_show_up_two_zombies_left_in_city_no_graveyard():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[1]
-    gs.city_deck = [CityCard('horde'), CityCard('zombie'), CityCard('zombie')]
+    gs.city_deck = [CityCard(ZombieType.HORDE), CityCard(ZombieType.ZOMBIE), CityCard(ZombieType.ZOMBIE)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 0
     assert len(gs.players[0].zombies) == 1
@@ -109,7 +122,7 @@ def test_horde_show_up_two_zombies_left_in_city_no_graveyard():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[2]
-    gs.city_deck = [CityCard('horde'), CityCard('zombie'), CityCard('zombie')]
+    gs.city_deck = [CityCard(ZombieType.HORDE), CityCard(ZombieType.ZOMBIE), CityCard(ZombieType.ZOMBIE)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 0
     assert len(gs.players[0].zombies) == 1
@@ -122,8 +135,10 @@ def test_horde_show_up_two_zombies_left_in_city_more_on_graveyard():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[1]
-    gs.city_deck = [CityCard('horde'), CityCard('zombie'), CityCard('zombie')]
-    gs.city_graveyard = [CityCard('zombie'), CityCard('survivor'), CityCard('zombie')]
+    gs.city_deck = [CityCard(ZombieType.HORDE), CityCard(ZombieType.ZOMBIE), CityCard(ZombieType.ZOMBIE)]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    survivor_card.flip()
+    gs.city_graveyard = [CityCard(ZombieType.ZOMBIE), survivor_card, CityCard(ZombieType.ZOMBIE)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 2
     assert len(gs.city_graveyard) == 1
@@ -137,8 +152,10 @@ def test_horde_show_up_second_time():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[1]
-    gs.city_deck = [CityCard('horde'), CityCard('zombie'), CityCard('horde'), CityCard('zombie'),
-                    CityCard('zombie'), CityCard('zombie'), CityCard('zombie'), CityCard('zombie')]
+    horde = ZombieType.HORDE
+    zombie = ZombieType.ZOMBIE
+    gs.city_deck = [CityCard(horde), CityCard(zombie), CityCard(horde), CityCard(zombie),
+                    CityCard(zombie), CityCard(zombie), CityCard(zombie), CityCard(zombie)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 0
     assert len(gs.city_graveyard) == 2
@@ -150,8 +167,8 @@ def test_horde_show_up_second_time():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
     gs.active_player = gs.players[2]
-    gs.city_deck = [CityCard('horde'), CityCard('horde'), CityCard('zombie'), CityCard('zombie'),
-                    CityCard('zombie'), CityCard('zombie'), CityCard('zombie'), CityCard('zombie')]
+    gs.city_deck = [CityCard(horde), CityCard(horde), CityCard(zombie), CityCard(zombie),
+                    CityCard(zombie), CityCard(zombie), CityCard(zombie), CityCard(zombie)]
     gs.zombie_show_up()
     assert len(gs.city_deck) == 0
     assert len(gs.city_graveyard) == 2
@@ -183,8 +200,10 @@ def test_get_supplies():
 def test_end_active_player_turn_no_zombies():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    survivor_card.flip()
     for player in gs.players:
-        player.survivors.append(CityCard('zombie'))
+        player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
     gs.supply_deck = ['axe', 'alarm', 'axe', 'gun']
     gs.end_active_player_turn()
@@ -195,8 +214,10 @@ def test_end_active_player_turn_no_zombies():
 def test_end_active_player_turn_no_supplies_more_in_graveyard():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    survivor_card.flip()
     for player in gs.players:
-        player.survivors.append(CityCard('zombie'))
+        player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
     gs.supply_deck = ['axe']
     gs.supply_graveyard = ['alarm', 'drone']
@@ -209,8 +230,10 @@ def test_end_active_player_turn_no_supplies_more_in_graveyard():
 def test_end_active_player_turn_no_supplies():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    survivor_card.flip()
     for player in gs.players:
-        player.survivors.append(CityCard('zombie'))
+        player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
     gs.supply_deck = []
     gs.supply_graveyard = []
@@ -223,8 +246,10 @@ def test_end_active_player_turn_no_supplies():
 def test_end_active_player_turn_zombies_no_obstacles():
     gs = GameState()
     gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    survivor_card.flip()
     for player in gs.players:
-        player.survivors.append(CityCard('zombie'))
+        player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
     gs.active_player.supplies = ['axe', 'alarm']
     zombie_card = CityCard('zombie')
