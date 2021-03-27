@@ -100,6 +100,8 @@ def play_shotgun(game_state):
 
 def get_action(game_state, message, possible_actions):
     shelter = game_state.active_player
+    if len(possible_actions) == 1:
+        return possible_actions[0]
     while True:
         action = shelter.input(message)
         if action in possible_actions:
@@ -235,21 +237,26 @@ def defend_with_mine_field(game_state):
     put_supplies_on_graveyard(game_state, Supply.MINE_FILED, obstacle=True)
 
 
+def find_rivals_and_build_action_message(game_state):
+    shelter = game_state.active_player
+    rivals = []
+    choice_message = ''
+    possible_actions = []
+    for rival in game_state.players:
+        if rival != shelter and not rival.defeated:
+            rivals.append(rival)
+    for index, rival in enumerate(rivals):
+        choice_message += f'[{index}]: {rival.name} shelter\n'
+        possible_actions.append(str(index))
+    return choice_message, possible_actions, rivals
+
+
 def play_sacrifice(game_state):
     shelter = game_state.active_player
     survivor_card = shelter.survivors[0]
     shelter.survivors.remove(survivor_card)
     game_state.city_graveyard.append(survivor_card)
-    rivals = []
-    choice_message = ''
-    possible_actions = []
-    for rival in game_state.players:
-        if rival != shelter:
-            rivals.append(rival)
-
-    for index, rival in enumerate(rivals):
-        choice_message += f'[{index}]: {rival.name} shelter\n'
-        possible_actions.append(str(index))
+    choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
 
     for _ in range(len(shelter.zombies)):
         zombie_card = shelter.zombies[0]
@@ -257,5 +264,37 @@ def play_sacrifice(game_state):
         action = get_action(game_state, message, possible_actions)
         shelter.zombies.remove(zombie_card)
         rivals[int(action)].zombies.append(zombie_card)
-    shelter.print('One of survivors sacrificed himself in a heroic act and led all the zombies out of the shelter!')
+    shelter.print('One of survivors in a heroic act led all the zombies out of the shelter!')
     put_supplies_on_graveyard(game_state, Supply.SACRIFICE)
+
+
+def play_drone(game_state):
+    shelter = game_state.active_player
+    big_inside, lesser_counter = count_zombies(game_state)
+    choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
+    if len(shelter.zombies) < 2 or (big_inside and lesser_counter == 0) or not big_inside:
+        zombie_card = shelter.zombies[0]
+        shelter.print(f'One of survivors used {Supply.DRONE} to lure {zombie_card.top.value} out...')
+        message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
+        action = get_action(game_state, message, possible_actions)
+        shelter.zombies.remove(zombie_card)
+        rivals[int(action)].zombies.append(zombie_card)
+
+    elif big_inside and lesser_counter > 0:
+        message = 'What survivors should do [0/1]?\n' \
+                  '[0]: lure big zombie out of shelter\n' \
+                  '[1]: lure lesser zombie out of shelter\n>>'
+        action = get_action(game_state, message, ['0', '1'])
+        if action == '0':
+            zombie_type = [ZombieType.BIG]
+        else:
+            zombie_type = [ZombieType.FAST, ZombieType.ZOMBIE]
+        for zombie in shelter.zombies:
+            if zombie.top in zombie_type:
+                shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
+                message = f'Where {zombie.top.value} will be lured?\n' + choice_message
+                action = get_action(game_state, message, possible_actions)
+                shelter.zombies.remove(zombie)
+                rivals[int(action)].zombies.append(zombie)
+                break
+    put_supplies_on_graveyard(game_state, Supply.DRONE)

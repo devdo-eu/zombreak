@@ -522,3 +522,75 @@ def test_play_sacrifice(gs, fast_zombie, zombie, big_zombie):
     assert big_zombie in gs.players[2].zombies
     assert len(gs.city_graveyard) == 1
     assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_sacrifice_when_one_rivals_defeated(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.players[0].defeated = True
+    gs.active_player = gs.players[1]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.zombies = [zombie, big_zombie, fast_zombie]
+    shelter.survivors = [CityCard(), CityCard()]
+    shelter.supplies = [Supply.SACRIFICE]
+    supply_logic.play_sacrifice(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.survivors) == 1
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[0].zombies) == 0
+    assert len(gs.players[2].zombies) == 3
+    assert len(gs.city_graveyard) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_drone(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0', '1'])
+    shelter.zombies = [zombie, big_zombie, fast_zombie]
+    shelter.supplies = [Supply.DRONE]
+    supply_logic.play_drone(gs)
+    assert len(shelter.zombies) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[1].zombies) == 0
+    assert len(gs.players[2].zombies) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_drone_only_big(gs, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0'])
+    shelter.zombies = [big_zombie, big_zombie, big_zombie]
+    shelter.supplies = [Supply.DRONE]
+    supply_logic.play_drone(gs)
+    assert len(shelter.zombies) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[1].zombies) == 1
+    assert len(gs.players[2].zombies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
+
+
+def test_play_drone_only_lesser_one_rival(gs, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    gs.players[1].defeated = True
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.zombies = [big_zombie, big_zombie, big_zombie]
+    shelter.supplies = [Supply.DRONE]
+    supply_logic.play_drone(gs)
+    assert len(shelter.zombies) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[1].zombies) == 0
+    assert len(gs.players[2].zombies) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(outputs) == 2
