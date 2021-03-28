@@ -4,35 +4,35 @@ from supply_enums import Supply
 from copy import copy
 from city_card import CityCard
 import common_logic
-import defences_logic
-import summons_logic
-import counters_logic
-import weapons_logic
+import defences
+import summons
+import counters
+import weapons
 
 
 play_supplies = {
-    Supply.ALARM: defences_logic.play_alarm,
-    Supply.MINE_FILED: defences_logic.play_mine_field,
-    Supply.BARRICADES: defences_logic.play_barricades,
-    Supply.RADIO: summons_logic.play_radio,
-    Supply.MEGAPHONE: summons_logic.play_megaphone,
-    Supply.FLARE_GUN: summons_logic.play_flare_gun,
-    Supply.SACRIFICE: counters_logic.play_sacrifice,
-    Supply.DRONE: counters_logic.play_drone,
-    Supply.LURE_OUT: counters_logic.play_lure_out,
-    Supply.CHAINSAW: counters_logic.play_chainsaw,
-    Supply.TAKEOVER: counters_logic.play_takeover,
-    Supply.SWAP: counters_logic.play_swap,
-    Supply.SNIPER: weapons_logic.play_sniper_rifle,
-    Supply.SHOTGUN: weapons_logic.play_shotgun,
-    Supply.GUN: weapons_logic.play_gun,
-    Supply.AXE: weapons_logic.play_axe
+    Supply.ALARM: defences.play_alarm,
+    Supply.MINE_FILED: defences.play_mine_field,
+    Supply.BARRICADES: defences.play_barricades,
+    Supply.RADIO: summons.play_radio,
+    Supply.MEGAPHONE: summons.play_megaphone,
+    Supply.FLARE_GUN: summons.play_flare_gun,
+    Supply.SACRIFICE: counters.play_sacrifice,
+    Supply.DRONE: counters.play_drone,
+    Supply.LURE_OUT: counters.play_lure_out,
+    Supply.CHAINSAW: counters.play_chainsaw,
+    Supply.TAKEOVER: counters.play_takeover,
+    Supply.SWAP: counters.play_swap,
+    Supply.SNIPER: weapons.play_sniper_rifle,
+    Supply.SHOTGUN: weapons.play_shotgun,
+    Supply.GUN: weapons.play_gun,
+    Supply.AXE: weapons.play_axe
 }
 
 activate_obstacle = {
-    Supply.ALARM: defences_logic.defend_with_alarm,
-    Supply.BARRICADES: defences_logic.defend_with_barricades,
-    Supply.MINE_FILED: defences_logic.defend_with_mine_field
+    Supply.ALARM: defences.defend_with_alarm,
+    Supply.BARRICADES: defences.defend_with_barricades,
+    Supply.MINE_FILED: defences.defend_with_mine_field
 }
 
 

@@ -1,7 +1,7 @@
 from city_card import CityCard
 from player_shelter import PlayerShelter
 from supply_enums import Supply
-import defences_logic
+import defences
 import pytest
 from tests.common import dumper_factory, helper_factory, gs, fast_zombie, zombie, big_zombie
 import tests.common
@@ -23,7 +23,7 @@ def shelter(gs, fast_zombie, zombie, big_zombie):
 
 def test_play_alarm(gs, shelter):
     shelter.supplies = [Supply.ALARM]
-    defences_logic.play_alarm(gs)
+    defences.play_alarm(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -35,7 +35,7 @@ def test_play_alarm(gs, shelter):
 def test_defend_with_alarm(gs, shelter):
     shelter.survivors = [CityCard()]
     shelter.obstacles = [Supply.ALARM]
-    defences_logic.defend_with_alarm(gs)
+    defences.defend_with_alarm(gs)
     assert len(tests.common.outputs) == 4
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 0
@@ -46,7 +46,7 @@ def test_defend_with_alarm(gs, shelter):
 
 def test_play_barricades(gs, shelter):
     shelter.supplies = [Supply.BARRICADES]
-    defences_logic.play_barricades(gs)
+    defences.play_barricades(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -58,7 +58,7 @@ def test_play_barricades(gs, shelter):
 def test_defend_with_barricades(gs, shelter):
     shelter.survivors = [CityCard()]
     shelter.obstacles = [Supply.BARRICADES]
-    defences_logic.defend_with_barricades(gs)
+    defences.defend_with_barricades(gs)
     assert len(tests.common.outputs) == 3
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 0
@@ -72,7 +72,7 @@ def test_defend_with_barricades(gs, shelter):
 
 def test_play_mine_field(gs, shelter):
     shelter.supplies = [Supply.MINE_FILED]
-    defences_logic.play_mine_field(gs)
+    defences.play_mine_field(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -85,7 +85,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences_logic.defend_with_mine_field(gs)
+    defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 0
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 1
@@ -96,7 +96,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences_logic.defend_with_mine_field(gs)
+    defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert fast_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0
@@ -109,7 +109,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences_logic.defend_with_mine_field(gs)
+    defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert big_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0
@@ -122,7 +122,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences_logic.defend_with_mine_field(gs)
+    defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert fast_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0

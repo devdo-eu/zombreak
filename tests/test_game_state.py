@@ -1,4 +1,4 @@
-from logic import GameState
+from game_state import GameState
 from city_card import CityCard
 from player_shelter import PlayerShelter
 from zombie_enums import ZombieType
@@ -42,20 +42,6 @@ def test_get_supply_card_when_final_attack():
     gs.prepare_supply_deck()
     card = gs.get_supply_card()
     assert card is None
-
-
-def test_player_shelter_class():
-    shelter = PlayerShelter()
-    assert shelter.name == ''
-    assert not shelter.defeated
-    assert len(shelter.zombies) == 0
-    assert len(shelter.supplies) == 0
-    assert len(shelter.obstacles) == 0
-    assert len(shelter.survivors) == 0
-    assert type(shelter.zombies) is list
-    assert type(shelter.supplies) is list
-    assert type(shelter.obstacles) is list
-    assert type(shelter.survivors) is list
 
 
 def test_city_card_ctor_exception():

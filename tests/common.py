@@ -1,5 +1,5 @@
 import pytest
-from logic import GameState
+from game_state import GameState
 from zombie_enums import ZombieType
 from city_card import CityCard
 from player_shelter import PlayerShelter
