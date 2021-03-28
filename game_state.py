@@ -201,7 +201,7 @@ class GameState:
                 action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?', ['y', 'n'])
                 if action == 'y':
                     self.activate_obstacle(obstacle)
-                    if common_logic.is_loud(obstacle):
+                    if common_logic.loud_obstacle(obstacle):
                         loud_defence = True
         return loud_defence
 
@@ -218,9 +218,12 @@ class GameState:
                 continue
 
             action, possible_actions = self.ask_player_what_move()
-            if action not in possible_actions[len(shelter.supplies):]:
+            if action in possible_actions[:-1]:
+                loud = common_logic.is_loud(shelter.supplies[int(action)])
                 play_supplies[shelter.supplies[int(action)]](self)
-            elif action == possible_actions[-2] and len(shelter.supplies) == 3:
+                if loud:
+                    self.zombie_show_up()
+            elif action == possible_actions[-1] and len(shelter.supplies) == 3:
                 discarded = True
                 turn_end = self.discard_supplies_move(turn_end)
             else:
@@ -230,31 +233,36 @@ class GameState:
     def ask_player_what_move(self):
         shelter = self.active_player
         shelter.gui(self)
+        possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'What do you want to do?\n'
         for index, supply in enumerate(shelter.supplies):
-            question += f'[{index}] Use {supply.value}\n'
+            loud = ''
+            if common_logic.is_loud(supply):
+                loud = '(loud instantly)'
+            elif common_logic.loud_obstacle(supply):
+                loud = '(loud after use in defence phase)'
+            question += f'[{index}] Use {supply.value} {loud}\n'
         if len(shelter.supplies) > 2:
             question += f'[{len(shelter.supplies)}] Discard some supplies\n'
-            question += f'[{len(shelter.supplies) + 1}] End my turn\n'
-            possible_actions = [str(number) for number in range(len(shelter.supplies) + 2)]
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
-            possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
-        action = common_logic.get_action(self, question, possible_actions)
+        action = common_logic.get_action(self, question + '> ', possible_actions)
         return action, possible_actions
 
     def discard_supplies_move(self, turn_end):
         shelter = self.active_player
-        possible_actions = [str(number) for number in range(len(shelter.supplies) + 2)]
+        possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'Which supply you want to discard?\n'
         for index, supply in enumerate(shelter.supplies):
             question += f'[{index}] Discard {supply.value}\n'
-        question += f'[{len(shelter.supplies) }] Discard all supplies\n'
-        question += f'[{len(shelter.supplies) + 1}] End my turn\n'
-        action = common_logic.get_action(self, question, possible_actions)
-        if action in possible_actions[:-2]:
+        if len(shelter.supplies) > 2:
+            question += f'[{len(shelter.supplies)}] Discard all supplies\n'
+        else:
+            question += f'[{len(shelter.supplies)}] End my turn\n'
+        action = common_logic.get_action(self, question + '> ', possible_actions)
+        if action in possible_actions[:-1]:
             self.supply_graveyard.append(shelter.supplies.pop(int(action)))
-        elif action == possible_actions[-2]:
+        elif action == possible_actions[-1] and len(shelter.supplies) == 3:
             for _ in range(len(shelter.supplies)):
                 self.supply_graveyard.append(shelter.supplies.pop())
             turn_end = True

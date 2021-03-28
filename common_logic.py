@@ -3,9 +3,12 @@ from supply_enums import Supply
 
 
 def is_loud(supply):
-    loud_supplies = [Supply.ALARM, Supply.MINE_FILED, Supply.MEGAPHONE, Supply.FLARE_GUN,
-                     Supply.CHAINSAW, Supply.SWAP, Supply.SHOTGUN, Supply.GUN]
+    loud_supplies = [Supply.MEGAPHONE, Supply.FLARE_GUN, Supply.CHAINSAW, Supply.SWAP, Supply.SHOTGUN, Supply.GUN]
     return supply in loud_supplies
+
+
+def loud_obstacle(supply):
+    return supply in [Supply.ALARM, Supply.MINE_FILED]
 
 
 def put_supplies_on_graveyard(game_state, supply, obstacle=False):
