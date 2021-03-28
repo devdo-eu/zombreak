@@ -52,8 +52,7 @@ def play_shotgun(game_state):
         play_weapon(game_state, Supply.SHOTGUN, destroyed=False)
         play_weapon(game_state, Supply.SHOTGUN)
     else:
-        message = 'What survivors should do [0/1]?\n' \
-                  '[0]: kill big zombie\n' \
+        message = 'What survivors should do [0/1]?\n[0]: kill big zombie\n' \
                   f'[1]: kill up to two lesser zombies ({lesser_counter} inside)\n>>'
         action = get_action(game_state, message, ['0', '1'])
         if action == '0':
@@ -86,9 +85,7 @@ def play_sniper_rifle(game_state):
     elif lesser_counter > 0 and not big_inside:
         play_weapon(game_state, Supply.SNIPER)
     else:
-        message = 'What survivors should do[0/1]?\n' \
-                  '[0]: kill big zombie\n' \
-                  '[1]: kill lesser zombie\n>>'
+        message = 'What survivors should do[0/1]?\n[0]: kill big zombie\n[1]: kill lesser zombie\n>>'
         action = get_action(game_state, message, ['0', '1'])
         if action == '0':
             play_weapon(game_state, Supply.SNIPER, strong=True)

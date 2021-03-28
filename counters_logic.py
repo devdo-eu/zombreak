@@ -1,6 +1,7 @@
 from zombie_enums import ZombieType
 from supply_enums import Supply
-from common_logic import find_rivals_and_build_action_message, put_supplies_on_graveyard, count_zombies, get_action
+from common_logic import find_rivals_and_build_action_message, put_supplies_on_graveyard, get_action
+from common_logic import count_zombies_and_execute_function
 
 
 def play_sacrifice(game_state):
@@ -22,33 +23,18 @@ def play_sacrifice(game_state):
 
 def play_drone(game_state):
     shelter = game_state.active_player
-    big_inside, lesser_counter = count_zombies(game_state)
-    choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
-    if len(shelter.zombies) < 2 or (big_inside and lesser_counter == 0) or not big_inside:
-        zombie_card = shelter.zombies[0]
-        shelter.print(f'One of survivors used {Supply.DRONE} to lure {zombie_card.top.value} out...')
-        message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
-        action = get_action(game_state, message, possible_actions)
-        shelter.zombies.remove(zombie_card)
-        rivals[int(action)].zombies.append(zombie_card)
 
-    elif big_inside and lesser_counter > 0:
-        message = 'What survivors should do [0/1]?\n' \
-                  '[0]: lure big zombie out of shelter\n' \
-                  '[1]: lure lesser zombie out of shelter\n>>'
-        action = get_action(game_state, message, ['0', '1'])
-        if action == '0':
-            zombie_type = [ZombieType.BIG]
-        else:
-            zombie_type = [ZombieType.FAST, ZombieType.ZOMBIE]
-        for zombie in shelter.zombies:
-            if zombie.top in zombie_type:
-                shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
-                message = f'Where {zombie.top.value} will be lured?\n' + choice_message
-                action = get_action(game_state, message, possible_actions)
-                shelter.zombies.remove(zombie)
-                rivals[int(action)].zombies.append(zombie)
-                break
+    def use_drone(zombie):
+        choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
+        shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
+        message = f'Where {zombie.top.value} will be lured?\n' + choice_message
+        action = get_action(game_state, message, possible_actions)
+        shelter.zombies.remove(zombie)
+        rivals[int(action)].zombies.append(zombie)
+
+    message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
+              '[1]: lure lesser zombie out of shelter\n>>'
+    count_zombies_and_execute_function(game_state, message, use_drone)
     put_supplies_on_graveyard(game_state, Supply.DRONE)
 
 
@@ -116,32 +102,16 @@ def play_lure_out(game_state):
                 action = get_action(game_state, message, possible_actions)
                 rival = rivals[int(action)]
                 rival.zombies.append(game_state.get_city_card())
-    big_inside, lesser_counter = count_zombies(game_state)
-    if len(shelter.zombies) < 2 or (big_inside and lesser_counter == 0) or not big_inside:
-        zombie_card = shelter.zombies[0]
+
+    def lure_out(zombie_card):
         shelter.print(f'One of survivors used {Supply.LURE_OUT} to lure {zombie_card.top.value} out...')
         message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
         action = get_action(game_state, message, possible_actions)
         rival = rivals[int(action)]
         rival.zombies.append(zombie_card)
         shelter.zombies.remove(zombie_card)
-    elif big_inside and lesser_counter > 0:
-        message = 'What survivors should do [0/1]?\n' \
-                  '[0]: lure big zombie out of shelter\n' \
-                  '[1]: lure lesser zombie out of shelter\n>>'
-        action = get_action(game_state, message, ['0', '1'])
-        if action == '0':
-            zombie_type = [ZombieType.BIG]
-        else:
-            zombie_type = [ZombieType.FAST, ZombieType.ZOMBIE]
-        for zombie in shelter.zombies:
-            if zombie.top in zombie_type:
-                zombie_card = zombie
-                shelter.print(f'One of survivors used {Supply.LURE_OUT} to lure {zombie_card.top.value} out...')
-                message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
-                action = get_action(game_state, message, possible_actions)
-                rival = rivals[int(action)]
-                rival.zombies.append(zombie_card)
-                shelter.zombies.remove(zombie_card)
-                break
+
+    message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
+              '[1]: lure lesser zombie out of shelter\n>>'
+    count_zombies_and_execute_function(game_state, message, lure_out)
     put_supplies_on_graveyard(game_state, Supply.LURE_OUT)

@@ -61,3 +61,22 @@ def count_zombies(game_state):
         else:
             lesser_counter += 1
     return big_inside, lesser_counter
+
+
+def count_zombies_and_execute_function(game_state, message, execute, count=2):
+    shelter = game_state.active_player
+    big_inside, lesser_counter = count_zombies(game_state)
+    if len(shelter.zombies) < count or (big_inside and lesser_counter == 0) or not big_inside:
+        zombie_card = shelter.zombies[0]
+        execute(zombie_card)
+    else:
+        action = get_action(game_state, message, ['0', '1'])
+        if action == '0':
+            zombie_type = [ZombieType.BIG]
+        else:
+            zombie_type = [ZombieType.FAST, ZombieType.ZOMBIE]
+        for zombie in shelter.zombies:
+            if zombie.top in zombie_type:
+                zombie_card = zombie
+                execute(zombie_card)
+                break
