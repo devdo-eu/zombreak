@@ -19,11 +19,3 @@ class Supply(Enum):
     SHOTGUN = 'shotgun'
     GUN = 'gun'
     AXE = 'axe'
-
-
-@unique
-class SupplyType(Enum):
-    DEFENCES = 'defences'
-    SUMMONS = 'summons'
-    COUNTERS = 'counters'
-    WEAPONS = 'weapons'

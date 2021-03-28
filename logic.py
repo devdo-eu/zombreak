@@ -2,11 +2,12 @@ from random import shuffle
 from zombie_enums import ZombieType
 from supply_enums import Supply
 from copy import copy
-import weapons_logic
-import defences_logic
-import counters_logic
-import summons_logic
+from city_card import CityCard
 import common_logic
+import defences_logic
+import summons_logic
+import counters_logic
+import weapons_logic
 
 
 play_supplies = {
@@ -33,30 +34,6 @@ activate_obstacle = {
     Supply.BARRICADES: defences_logic.defend_with_barricades,
     Supply.MINE_FILED: defences_logic.defend_with_mine_field
 }
-
-
-class PlayerShelter:
-    def __init__(self, name='', input_foo=input, print_foo=print):
-        self.name = name
-        self.survivors = []
-        self.supplies = []
-        self.obstacles = []
-        self.zombies = []
-        self.defeated = False
-        self.input = input_foo
-        self.print = print_foo
-
-
-class CityCard:
-    def __init__(self, zombie=ZombieType.ZOMBIE):
-        if zombie == ZombieType.SURVIVOR:
-            raise Exception('Card cannot be init with survivor on top!')
-        self.active = True
-        self.top = ZombieType.SURVIVOR
-        self.bottom = zombie
-
-    def flip(self):
-        self.top, self.bottom = self.bottom, self.top
 
 
 class GameState:

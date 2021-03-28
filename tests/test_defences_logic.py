@@ -1,4 +1,5 @@
-from logic import PlayerShelter, CityCard
+from city_card import CityCard
+from player_shelter import PlayerShelter
 from supply_enums import Supply
 import defences_logic
 import pytest
