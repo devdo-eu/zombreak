@@ -1,6 +1,14 @@
 from logic import GameState, PlayerShelter, CityCard
 from zombie_enums import ZombieType
 from supply_enums import Supply
+from tests.common import fast_zombie, zombie, big_zombie, helper_factory, dumper_factory
+import tests.common
+
+
+def test_sanity_check():
+    assert fast_zombie
+    assert zombie
+    assert big_zombie
 
 
 def test_game_state_ctor():
@@ -243,6 +251,7 @@ def test_end_active_player_turn_zombies_no_obstacles():
     for player in gs.players:
         player.survivors.append(survivor_card)
     gs.active_player = gs.players[2]
+    gs.active_player.print = dumper_factory()
     gs.active_player.supplies = [Supply.AXE, Supply.ALARM]
     zombie_card = CityCard(ZombieType.ZOMBIE)
     zombie_card.flip()
@@ -251,3 +260,29 @@ def test_end_active_player_turn_zombies_no_obstacles():
     gs.end_active_player_turn()
     assert gs.active_player == gs.players[0]
     assert len(gs.players[2].supplies) == 0
+    assert len(tests.common.outputs) == 2
+
+
+def test_end_active_player_turn_zombies_and_alarm(fast_zombie, zombie, big_zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    survivor_card = CityCard(ZombieType.ZOMBIE)
+    for player in gs.players:
+        player.survivors.append(survivor_card)
+    survivor_card.flip()
+    gs.city_deck.append(survivor_card)
+    gs.supply_deck = [Supply.AXE, Supply.ALARM, Supply.AXE, Supply.GUN]
+    gs.active_player = gs.players[2]
+    shelter = gs.active_player
+    shelter.obstacles = [Supply.ALARM, Supply.ALARM]
+    shelter.zombies = [fast_zombie, zombie, big_zombie]
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y'])
+    gs.end_active_player_turn()
+    assert len(shelter.survivors) == 1
+    assert len(shelter.zombies) == 4
+    assert len(gs.city_deck) == 0
+    assert len(shelter.obstacles) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(shelter.supplies) == 3
+    assert len(tests.common.outputs) == 6

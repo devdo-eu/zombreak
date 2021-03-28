@@ -1,6 +1,38 @@
 from random import shuffle
 from zombie_enums import ZombieType
 from supply_enums import Supply
+from copy import copy
+import weapons_logic
+import defences_logic
+import counters_logic
+import summons_logic
+import common_logic
+
+
+play_supplies = {
+    Supply.ALARM: defences_logic.play_alarm,
+    Supply.MINE_FILED: defences_logic.play_mine_field,
+    Supply.BARRICADES: defences_logic.play_barricades,
+    Supply.RADIO: summons_logic.play_radio,
+    Supply.MEGAPHONE: summons_logic.play_megaphone,
+    Supply.FLARE_GUN: summons_logic.play_flare_gun,
+    Supply.SACRIFICE: counters_logic.play_sacrifice,
+    Supply.DRONE: counters_logic.play_drone,
+    Supply.LURE_OUT: counters_logic.play_lure_out,
+    Supply.CHAINSAW: counters_logic.play_chainsaw,
+    Supply.TAKEOVER: counters_logic.play_takeover,
+    Supply.SWAP: counters_logic.play_swap,
+    Supply.SNIPER: weapons_logic.play_sniper_rifle,
+    Supply.SHOTGUN: weapons_logic.play_shotgun,
+    Supply.GUN: weapons_logic.play_gun,
+    Supply.AXE: weapons_logic.play_axe
+}
+
+activate_obstacle = {
+    Supply.ALARM: defences_logic.defend_with_alarm,
+    Supply.BARRICADES: defences_logic.defend_with_barricades,
+    Supply.MINE_FILED: defences_logic.defend_with_mine_field
+}
 
 
 class PlayerShelter:
@@ -41,6 +73,13 @@ class GameState:
     @property
     def players_still_in_game(self):
         return [player for player in self.players if not player.defeated]
+
+    @property
+    def active_player_active_zombies(self):
+        for zombie in self.active_player.zombies:
+            if zombie.active:
+                return True
+        return False
 
     def prepare_city_deck(self):
         horde = [CityCard(ZombieType.HORDE) for _ in range(2)]
@@ -127,7 +166,7 @@ class GameState:
             self.active_player.supplies.append(card)
 
     def activate_obstacle(self, obstacle):
-        pass
+        activate_obstacle[obstacle](self)
 
     def clean_up_shelter(self, shelter):
         self.supply_graveyard += shelter.supplies + shelter.obstacles
@@ -136,19 +175,32 @@ class GameState:
 
     def end_active_player_turn(self):
         index = self.players.index(self.active_player)
-        if len(self.active_player.zombies) != 0:
-            for obstacle in self.active_player.obstacles:
-                self.activate_obstacle(obstacle)
-            for zombie in self.active_player.zombies:
-                if len(self.active_player.survivors) > 0 and zombie.active:
-                    card = self.active_player.survivors.pop()
-                    self.city_graveyard.append(card)
+        loud_defence = False
+        obstacles = copy(self.active_player.obstacles)
+        for obstacle in obstacles:
+            if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
+                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?', ['y', 'n'])
+                if action == 'y':
+                    self.activate_obstacle(obstacle)
+                    if common_logic.is_loud(obstacle):
+                        loud_defence = True
+
+        for zombie in self.active_player.zombies:
+            if len(self.active_player.survivors) > 0 and zombie.active:
+                self.active_player.print(f'{str(zombie.top.value).capitalize()} killed survivor!')
+                card = self.active_player.survivors.pop()
+                self.city_graveyard.append(card)
 
         if len(self.active_player.survivors) == 0:
+            self.active_player.print('No more living survivors inside shelter...')
             self.active_player.defeated = True
             index -= 1
             self.clean_up_shelter(self.active_player)
         else:
             self.get_supplies()
+            if loud_defence:
+                self.active_player.print('Loud noises in your shelter could be heard from miles away...')
+                self.zombie_show_up()
+            self.active_player.print('Your turn has ended.')
         helper_table = self.players_still_in_game + self.players_still_in_game
         self.active_player = helper_table[index + 1]
