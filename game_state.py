@@ -1,8 +1,9 @@
 from random import shuffle
 from zombie_enums import ZombieType
 from supply_enums import Supply
-from copy import copy
 from city_card import CityCard
+from player_shelter import PlayerShelter
+from copy import copy
 import common_logic
 import defences
 import summons
@@ -229,3 +230,16 @@ class GameState:
         else:
             turn_end = True
         return turn_end
+
+    def setup_game(self, players_names, initial_survivors=2):
+        self.prepare_city_deck()
+        self.prepare_supply_deck()
+        self.players = []
+        for name in players_names:
+            shelter = PlayerShelter(name)
+            for _ in range(initial_survivors):
+                shelter.survivors.append(self.get_city_card())
+            for _ in range(3):
+                shelter.supplies.append(self.get_supply_card())
+            self.players.append(shelter)
+        self.active_player = self.players[0]

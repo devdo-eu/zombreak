@@ -364,3 +364,18 @@ def test_play_round_play_axe_barricades_and_end_round(zombie, fast_zombie):
     assert len(shelter.zombies) == 1
     assert len(shelter.survivors) == 1
     assert gs.active_player != shelter
+
+
+def test_setup_game():
+    gs = GameState()
+    gs.setup_game(['First', 'Second', 'Third'], 3)
+    assert gs.active_player == gs.players[0]
+    for shelter in gs.players:
+        assert len(shelter.survivors) == 3
+        assert len(shelter.supplies) == 3
+
+    gs.setup_game(['First', 'Second', 'Third'], 1)
+    assert gs.active_player == gs.players[0]
+    for shelter in gs.players:
+        assert len(shelter.survivors) == 1
+        assert len(shelter.supplies) == 3
