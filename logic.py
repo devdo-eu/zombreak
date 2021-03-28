@@ -35,6 +35,7 @@ class GameState:
         self.supply_graveyard = []
         self.players = []
         self.active_player = None
+        self.final_attack = False
         self.finished = False
 
     @property
@@ -50,20 +51,9 @@ class GameState:
         shuffle(deck)
         self.city_deck = deck
 
-    def shuffle_city_graveyard(self):
-        new_city = []
-        for card in self.city_graveyard:
-            if card.top != ZombieType.SURVIVOR:
-                card.flip()
-            new_city.append(card)
-        shuffle(new_city)
-        self.city_graveyard = []
-        self.city_deck = self.city_deck + new_city
-
     def get_city_card(self):
         if len(self.city_deck) < 1:
-            self.shuffle_city_graveyard()
-        if len(self.city_deck) < 1:
+            self.final_attack = True
             return None
         card = self.city_deck.pop(0)
         return card
@@ -77,7 +67,7 @@ class GameState:
     def get_supply_card(self):
         if len(self.supply_deck) < 1:
             self.shuffle_supply_graveyard()
-        if len(self.supply_deck) < 1:
+        if len(self.supply_deck) < 1 or self.final_attack:
             return None
         card = self.supply_deck.pop(0)
         return card

@@ -26,6 +26,14 @@ def test_prepare_supply_deck():
     assert len(gs.supply_deck) == 55
 
 
+def test_get_supply_card_when_final_attack():
+    gs = GameState()
+    gs.final_attack = True
+    gs.prepare_supply_deck()
+    card = gs.get_supply_card()
+    assert card is None
+
+
 def test_player_shelter_class():
     shelter = PlayerShelter()
     assert shelter.name == ''
@@ -130,23 +138,6 @@ def test_horde_show_up_two_zombies_left_in_city_no_graveyard():
     assert len(gs.players[1].zombies) == 1
     assert len(gs.players[2].zombies) == 0
     assert len(gs.active_player.zombies) == 0
-
-
-def test_horde_show_up_two_zombies_left_in_city_more_on_graveyard():
-    gs = GameState()
-    gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter()]
-    gs.active_player = gs.players[1]
-    gs.city_deck = [CityCard(ZombieType.HORDE), CityCard(ZombieType.ZOMBIE), CityCard(ZombieType.ZOMBIE)]
-    survivor_card = CityCard(ZombieType.ZOMBIE)
-    survivor_card.flip()
-    gs.city_graveyard = [CityCard(ZombieType.ZOMBIE), survivor_card, CityCard(ZombieType.ZOMBIE)]
-    gs.zombie_show_up()
-    assert len(gs.city_deck) == 2
-    assert len(gs.city_graveyard) == 1
-    assert len(gs.players[0].zombies) == 1
-    assert len(gs.players[1].zombies) == 1
-    assert len(gs.players[2].zombies) == 1
-    assert len(gs.active_player.zombies) == 1
 
 
 def test_horde_show_up_second_time():
