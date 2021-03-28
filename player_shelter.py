@@ -21,7 +21,8 @@ class PlayerShelter:
             info += rival_info + '-' * 70 + '\n'
 
         supplies = self.obstacle_or_supplies_info(self, False)
-        my_info = 'Your ' + self.get_shelter_info(self) + f'Supplies: {supplies[:-2]}\n'
+        city = self.news_from_city(game_state)
+        my_info = 'Your ' + self.get_shelter_info(self) + f'Supplies: {supplies[:-2]}\n' + city
         self.print(info + my_info)
 
     def get_shelter_info(self, shelter):
@@ -39,6 +40,18 @@ class PlayerShelter:
             if player.name != self.name:
                 rivals.append(player)
         return rivals
+
+    @staticmethod
+    def news_from_city(game_state):
+        city = ''
+        deck = game_state.city_deck
+        if len(deck) == 0:
+            city += 'No one with beating heart left in the city...\n'
+        elif deck[0].top == ZombieType.SURVIVOR:
+            city += 'City is quiet. This is an opportunity to let survivors in the city know about us!\n'
+        else:
+            city += f'{deck[0].top.value} roam the city. Any noise will cause him to find our shelter!\n'
+        return city
 
     @staticmethod
     def obstacle_or_supplies_info(shelter, obstacle=True):

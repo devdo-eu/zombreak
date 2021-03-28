@@ -44,4 +44,9 @@ def test_gui_default(fast_zombie, zombie, big_zombie):
     shelter.survivors = [CityCard(), CityCard(), CityCard(), CityCard()]
     shelter.gui_default(gs)
     assert len(tests.common.outputs) == 1
-    assert len(tests.common.outputs[0]) == 536
+    assert len(tests.common.outputs[0]) == 582
+
+    gs.city_deck = [zombie, CityCard()]
+    shelter.gui_default(gs)
+    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs[1]) == 604

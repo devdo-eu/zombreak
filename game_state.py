@@ -218,9 +218,9 @@ class GameState:
                 continue
 
             action, possible_actions = self.ask_player_what_move()
-            if action not in possible_actions[-2:]:
+            if action not in possible_actions[len(shelter.supplies):]:
                 play_supplies[shelter.supplies[int(action)]](self)
-            elif action == possible_actions[-2]:
+            elif action == possible_actions[-2] and len(shelter.supplies) == 3:
                 discarded = True
                 turn_end = self.discard_supplies_move(turn_end)
             else:
@@ -230,25 +230,34 @@ class GameState:
     def ask_player_what_move(self):
         shelter = self.active_player
         shelter.gui(self)
-        possible_actions = [str(number) for number in range(len(shelter.supplies) + 2)]
         question = 'What do you want to do?\n'
         for index, supply in enumerate(shelter.supplies):
             question += f'[{index}] Use {supply.value}\n'
-        question += f'[{len(shelter.supplies)}] Discard some supplies\n'
-        question += f'[{len(shelter.supplies) + 1}] End my turn\n'
+        if len(shelter.supplies) > 2:
+            question += f'[{len(shelter.supplies)}] Discard some supplies\n'
+            question += f'[{len(shelter.supplies) + 1}] End my turn\n'
+            possible_actions = [str(number) for number in range(len(shelter.supplies) + 2)]
+        else:
+            question += f'[{len(shelter.supplies)}] End my turn\n'
+            possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         action = common_logic.get_action(self, question, possible_actions)
         return action, possible_actions
 
     def discard_supplies_move(self, turn_end):
         shelter = self.active_player
-        possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
+        possible_actions = [str(number) for number in range(len(shelter.supplies) + 2)]
         question = 'Which supply you want to discard?\n'
         for index, supply in enumerate(shelter.supplies):
             question += f'[{index}] Discard {supply.value}\n'
-        question += f'[{len(shelter.supplies)}] End my turn\n'
+        question += f'[{len(shelter.supplies) }] Discard all supplies\n'
+        question += f'[{len(shelter.supplies) + 1}] End my turn\n'
         action = common_logic.get_action(self, question, possible_actions)
-        if action != possible_actions[-1]:
-            shelter.supplies.pop(int(action))
+        if action in possible_actions[:-2]:
+            self.supply_graveyard.append(shelter.supplies.pop(int(action)))
+        elif action == possible_actions[-2]:
+            for _ in range(len(shelter.supplies)):
+                self.supply_graveyard.append(shelter.supplies.pop())
+            turn_end = True
         else:
             turn_end = True
         return turn_end
