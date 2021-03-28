@@ -274,3 +274,93 @@ def test_end_active_player_turn_zombies_and_alarm(fast_zombie, zombie, big_zombi
     assert len(gs.supply_graveyard) == 1
     assert len(shelter.supplies) == 3
     assert len(tests.common.outputs) == 6
+
+
+def test_ask_player_what_move(zombie):
+    gs = GameState()
+    gs.active_player = PlayerShelter()
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['1'])
+    shelter.zombies = [zombie]
+    shelter.supplies = [Supply.AXE, Supply.BARRICADES, Supply.ALARM]
+    action, possible_actions = gs.ask_player_what_move()
+    assert len(possible_actions) == 5
+    assert action == '1'
+
+    shelter.input = helper_factory(['0'])
+    action, possible_actions = gs.ask_player_what_move()
+    assert len(possible_actions) == 5
+    assert action == '0'
+
+    shelter.input = helper_factory(['9', 'dgadgagadg', '3'])
+    action, possible_actions = gs.ask_player_what_move()
+    assert len(possible_actions) == 5
+    assert action == '3'
+
+
+def test_discard_supplies_move():
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['3'])
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.AXE, Supply.BARRICADES, Supply.ALARM]
+    turn_end = gs.discard_supplies_move(False)
+    assert turn_end
+    assert len(shelter.supplies) == 3
+
+    gs.active_player = shelter
+    shelter.input = helper_factory(['1'])
+    turn_end = gs.discard_supplies_move(False)
+    assert not turn_end
+    assert len(shelter.supplies) == 2
+    assert Supply.BARRICADES not in shelter.supplies
+
+
+def test_play_round():
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['3', '1', '2'])
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.AXE, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert len(shelter.supplies) == 2
+    assert Supply.BARRICADES not in shelter.supplies
+    assert gs.active_player != shelter
+
+
+def test_play_round_end_round():
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['4'])
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.AXE, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert len(shelter.supplies) == 3
+    assert gs.active_player != shelter
+
+
+def test_play_round_play_axe_barricades_and_end_round(zombie, fast_zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0', '0', '2', 'y'])
+    shelter.zombies = [zombie, fast_zombie]
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.AXE, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert len(shelter.supplies) == 3
+    assert len(shelter.zombies) == 1
+    assert len(shelter.survivors) == 1
+    assert gs.active_player != shelter
