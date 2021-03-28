@@ -645,3 +645,39 @@ def test_play_takeover(gs):
     assert len(gs.players[2].survivors) == 1
     assert len(gs.supply_graveyard) == 1
     assert len(outputs) == 2
+
+
+def test_play_swap(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0'])
+    shelter.supplies = [Supply.SWAP]
+    shelter.zombies = [fast_zombie, big_zombie, fast_zombie, zombie]
+    gs.players[1].obstacles = [Supply.BARRICADES, Supply.ALARM]
+    supply_logic.play_swap(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.obstacles) == 2
+    assert len(gs.players[1].zombies) == 4
+    assert len(gs.players[1].obstacles) == 0
+    assert len(outputs) == 2
+
+
+def test_play_lure_out(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y', '1', '0', '0'])
+    shelter.supplies = [Supply.LURE_OUT]
+    shelter.zombies = [fast_zombie, big_zombie, fast_zombie, zombie]
+    gs.city_deck = [zombie, CityCard()]
+    supply_logic.play_lure_out(gs)
+    assert len(shelter.zombies) == 3
+    assert big_zombie not in shelter.zombies
+    assert len(gs.players[1].zombies) == 1
+    assert big_zombie in gs.players[1].zombies
+    assert len(gs.players[2].zombies) == 1
+    assert zombie in gs.players[2].zombies
+    assert len(outputs) == 2
