@@ -130,6 +130,20 @@ def test_play_shotgun_many_lesser(gs, fast_zombie, zombie):
     assert len(tests.common.outputs) == 5
 
 
+def test_play_shotgun_one_lesser_one_big(gs, zombie, big_zombie):
+    gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['1']))
+    shelter = gs.active_player
+    shelter.zombies = [big_zombie, zombie]
+    shelter.supplies = [Supply.SHOTGUN]
+    weapons_logic.play_shotgun(gs)
+    assert len(shelter.zombies) == 1
+    assert zombie not in shelter.zombies
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 1
+    assert len(tests.common.outputs) == 3
+
+
 def test_play_shotgun_many_lesser_one_big(gs, fast_zombie, zombie, big_zombie):
     gs.active_player = PlayerShelter(print_foo=dumper_factory(), input_foo=helper_factory(['0']))
     shelter = gs.active_player

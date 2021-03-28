@@ -63,6 +63,25 @@ def test_play_drone(gs, fast_zombie, zombie, big_zombie):
     shelter.supplies = [Supply.DRONE]
     counters_logic.play_drone(gs)
     assert len(shelter.zombies) == 2
+    assert big_zombie not in shelter.zombies
+    assert len(shelter.supplies) == 0
+    assert len(gs.players[1].zombies) == 0
+    assert len(gs.players[2].zombies) == 1
+    assert len(gs.supply_graveyard) == 1
+    assert len(tests.common.outputs) == 2
+
+
+def test_play_drone_chose_lesser(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['1', '1'])
+    shelter.zombies = [zombie, big_zombie, fast_zombie]
+    shelter.supplies = [Supply.DRONE]
+    counters_logic.play_drone(gs)
+    assert len(shelter.zombies) == 2
+    assert big_zombie in shelter.zombies
     assert len(shelter.supplies) == 0
     assert len(gs.players[1].zombies) == 0
     assert len(gs.players[2].zombies) == 1
@@ -180,6 +199,43 @@ def test_play_lure_out(gs, fast_zombie, zombie, big_zombie):
     counters_logic.play_lure_out(gs)
     assert len(shelter.zombies) == 3
     assert big_zombie not in shelter.zombies
+    assert len(gs.players[1].zombies) == 1
+    assert big_zombie in gs.players[1].zombies
+    assert len(gs.players[2].zombies) == 1
+    assert zombie in gs.players[2].zombies
+    assert len(tests.common.outputs) == 2
+
+
+def test_play_lure_out_lesser_zombie(gs, fast_zombie, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y', '1', '1', '0'])
+    shelter.supplies = [Supply.LURE_OUT]
+    shelter.zombies = [fast_zombie, big_zombie, fast_zombie, zombie]
+    gs.city_deck = [zombie, CityCard()]
+    counters_logic.play_lure_out(gs)
+    assert len(shelter.zombies) == 3
+    assert big_zombie in shelter.zombies
+    assert len(gs.players[1].zombies) == 1
+    assert fast_zombie in gs.players[1].zombies
+    assert len(gs.players[2].zombies) == 1
+    assert zombie in gs.players[2].zombies
+    assert len(tests.common.outputs) == 2
+
+
+def test_play_lure_only_big(gs, zombie, big_zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y', '1', '0'])
+    shelter.supplies = [Supply.LURE_OUT]
+    shelter.zombies = [big_zombie, big_zombie, big_zombie, big_zombie]
+    gs.city_deck = [zombie, CityCard()]
+    counters_logic.play_lure_out(gs)
+    assert len(shelter.zombies) == 3
     assert len(gs.players[1].zombies) == 1
     assert big_zombie in gs.players[1].zombies
     assert len(gs.players[2].zombies) == 1

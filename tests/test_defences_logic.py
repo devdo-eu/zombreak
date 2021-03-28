@@ -1,6 +1,7 @@
 from logic import PlayerShelter, CityCard
 from supply_enums import Supply
 import defences_logic
+import pytest
 from tests.common import dumper_factory, helper_factory, gs, fast_zombie, zombie, big_zombie
 import tests.common
 
@@ -12,8 +13,14 @@ def test_sanity_check():
     assert big_zombie
 
 
-def test_play_alarm(gs):
+@pytest.fixture
+def shelter(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
+    shelter.zombies = [zombie, big_zombie, fast_zombie]
+    return shelter
+
+
+def test_play_alarm(gs, shelter):
     shelter.supplies = [Supply.ALARM]
     defences_logic.play_alarm(gs)
     assert len(tests.common.outputs) == 1
@@ -24,10 +31,8 @@ def test_play_alarm(gs):
         assert hungry_zombie.active
 
 
-def test_defend_with_alarm(gs, fast_zombie, zombie, big_zombie):
-    shelter = gs.active_player
+def test_defend_with_alarm(gs, shelter):
     shelter.survivors = [CityCard()]
-    shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.ALARM]
     defences_logic.defend_with_alarm(gs)
     assert len(tests.common.outputs) == 4
@@ -38,8 +43,7 @@ def test_defend_with_alarm(gs, fast_zombie, zombie, big_zombie):
         assert not hungry_zombie.active
 
 
-def test_play_barricades(gs):
-    shelter = gs.active_player
+def test_play_barricades(gs, shelter):
     shelter.supplies = [Supply.BARRICADES]
     defences_logic.play_barricades(gs)
     assert len(tests.common.outputs) == 1
@@ -50,10 +54,8 @@ def test_play_barricades(gs):
         assert hungry_zombie.active
 
 
-def test_defend_with_barricades(gs, fast_zombie, zombie, big_zombie):
-    shelter = gs.active_player
+def test_defend_with_barricades(gs, shelter):
     shelter.survivors = [CityCard()]
-    shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.BARRICADES]
     defences_logic.defend_with_barricades(gs)
     assert len(tests.common.outputs) == 3
@@ -67,8 +69,7 @@ def test_defend_with_barricades(gs, fast_zombie, zombie, big_zombie):
     assert number_of_stopped_zombies == 1
 
 
-def test_play_mine_field(gs):
-    shelter = gs.active_player
+def test_play_mine_field(gs, shelter):
     shelter.supplies = [Supply.MINE_FILED]
     defences_logic.play_mine_field(gs)
     assert len(tests.common.outputs) == 1
