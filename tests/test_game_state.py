@@ -276,6 +276,35 @@ def test_end_active_player_turn_zombies_and_alarm(fast_zombie, zombie, big_zombi
     assert len(tests.common.outputs) == 6
 
 
+def test_end_active_player_turn_game_finished(fast_zombie, zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter(), PlayerShelter(), PlayerShelter(), PlayerShelter()]
+    gs.players[1].defeated = True
+    gs.players[2].zombies = [fast_zombie]
+    gs.players[2].survivors = [CityCard()]
+    gs.players[3].survivors = [CityCard()]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.survivors = [CityCard()]
+    shelter.zombies = [zombie]
+    assert not shelter.defeated
+    assert not gs.players[2].defeated
+    assert not gs.players[3].defeated
+    assert not gs.finished
+
+    gs.end_active_player_turn()
+    assert shelter.defeated
+    assert not gs.players[2].defeated
+    assert not gs.players[3].defeated
+    assert not gs.finished
+
+    gs.end_active_player_turn()
+    assert shelter.defeated
+    assert gs.players[2].defeated
+    assert not gs.players[3].defeated
+    assert gs.finished
+
+
 def test_ask_player_what_move(zombie):
     gs = GameState()
     gs.active_player = PlayerShelter()
@@ -379,3 +408,15 @@ def test_setup_game():
     for shelter in gs.players:
         assert len(shelter.survivors) == 1
         assert len(shelter.supplies) == 3
+
+
+def test_play_game(zombie):
+    gs = GameState()
+    gs.setup_game(['First', 'Second'], 1)
+    gs.players[0].print = dumper_factory()
+    gs.players[0].input = helper_factory(['4'])
+    gs.players[0].zombies = [zombie]
+    gs.players[1].print = dumper_factory()
+    winners = gs.play_game()
+    assert len(winners) == 1
+    assert winners[0] == 'Second'

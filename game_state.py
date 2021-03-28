@@ -153,22 +153,26 @@ class GameState:
 
     def end_active_player_turn(self):
         index = self.players.index(self.active_player)
-        loud_defence = False
-        obstacles = copy(self.active_player.obstacles)
-        for obstacle in obstacles:
-            if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
-                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?', ['y', 'n'])
-                if action == 'y':
-                    self.activate_obstacle(obstacle)
-                    if common_logic.is_loud(obstacle):
-                        loud_defence = True
+        loud_defence = self.defend_with_obstacles()
+        self.zombies_eats_survivors()
+        index = self.move_aftermath(index, loud_defence)
+        self.check_if_game_continues()
 
-        for zombie in self.active_player.zombies:
-            if len(self.active_player.survivors) > 0 and zombie.active:
-                self.active_player.print(f'{str(zombie.top.value).capitalize()} killed survivor!')
-                card = self.active_player.survivors.pop()
-                self.city_graveyard.append(card)
+        if not self.finished:
+            helper_table = self.players_still_in_game + self.players_still_in_game
+            self.active_player = helper_table[index + 1]
 
+    def check_if_game_continues(self):
+        zombies_in_game = 0
+        still_in_game = 0
+        for player in self.players:
+            zombies_in_game += len(player.zombies)
+            if not player.defeated:
+                still_in_game += 1
+        if (zombies_in_game == 0 and self.final_attack) or still_in_game < 2:
+            self.finished = True
+
+    def move_aftermath(self, index, loud_defence):
         if len(self.active_player.survivors) == 0:
             self.active_player.print('No more living survivors inside shelter...')
             self.active_player.defeated = True
@@ -180,8 +184,26 @@ class GameState:
                 self.active_player.print('Loud noises in your shelter could be heard from miles away...')
                 self.zombie_show_up()
             self.active_player.print('Your turn has ended.')
-        helper_table = self.players_still_in_game + self.players_still_in_game
-        self.active_player = helper_table[index + 1]
+        return index
+
+    def zombies_eats_survivors(self):
+        for zombie in self.active_player.zombies:
+            if len(self.active_player.survivors) > 0 and zombie.active:
+                self.active_player.print(f'{str(zombie.top.value).capitalize()} killed survivor!')
+                card = self.active_player.survivors.pop()
+                self.city_graveyard.append(card)
+
+    def defend_with_obstacles(self):
+        loud_defence = False
+        obstacles = copy(self.active_player.obstacles)
+        for obstacle in obstacles:
+            if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
+                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?', ['y', 'n'])
+                if action == 'y':
+                    self.activate_obstacle(obstacle)
+                    if common_logic.is_loud(obstacle):
+                        loud_defence = True
+        return loud_defence
 
     def play_round(self):
         shelter = self.active_player
@@ -243,3 +265,12 @@ class GameState:
                 shelter.supplies.append(self.get_supply_card())
             self.players.append(shelter)
         self.active_player = self.players[0]
+
+    def play_game(self):
+        while not self.finished:
+            self.play_round()
+        winners = []
+        for shelter in self.players:
+            if len(shelter.survivors) > 0:
+                winners.append(shelter.name)
+        return winners
