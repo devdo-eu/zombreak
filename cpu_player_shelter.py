@@ -2,6 +2,7 @@ from zombie_enums import ZombieType
 from supply_enums import Supply, SupplyType
 from player_shelter import PlayerShelter
 import common_logic
+from secrets import choice
 
 
 class CPUPlayerShelter(PlayerShelter):
@@ -88,7 +89,25 @@ class CPUPlayerShelter(PlayerShelter):
 
     def defend_policy(self):
         if self.weapons_amount > 0:
-            self.planned_moves = [(self.supplies_types.index(SupplyType.WEAPON))]
+            big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+            weapon = Supply.SHOTGUN if Supply.SHOTGUN in self.supplies else None
+            if weapon is not None:
+                self.planned_moves = [str(self.supplies.index(Supply.SHOTGUN))]
+                if lesser_count > 1:
+                    self.planned_moves.append('1')
+                elif big_zombie and lesser_count > 0:
+                    self.planned_moves.append(choice(['0', '1']))
+                return
+            weapon = Supply.GUN if Supply.GUN in self.supplies else None
+            if weapon is not None and lesser_count > 0 and not self.zombie_in_city:
+                self.planned_moves = [str(self.supplies.index(Supply.GUN))]
+                return
+            weapon = Supply.AXE if Supply.AXE in self.supplies else None
+            if weapon is not None and lesser_count > 0:
+                self.planned_moves = [str(self.supplies.index(Supply.AXE))]
+                return
+        if self.counters_amount > 0:
+            pass
 
     def end_turn_policy(self):
         end_turn = True
