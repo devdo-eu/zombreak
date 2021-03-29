@@ -1,5 +1,5 @@
 from zombie_enums import ZombieType
-from supply_enums import Supply
+from supply_enums import Supply, SupplyType
 
 
 def is_loud(supply):
@@ -9,6 +9,17 @@ def is_loud(supply):
 
 def loud_obstacle(supply):
     return supply in [Supply.ALARM, Supply.MINE_FILED]
+
+
+def check_type(supply: Supply):
+    if supply in [Supply.ALARM, Supply.MINE_FILED, Supply.BARRICADES]:
+        return SupplyType.DEFENCE
+    elif supply in [Supply.RADIO, Supply.MEGAPHONE, Supply.FLARE_GUN]:
+        return SupplyType.SUMMON
+    elif supply in [Supply.SNIPER, Supply.SHOTGUN, Supply.GUN, Supply.AXE]:
+        return SupplyType.WEAPON
+    else:
+        return SupplyType.COUNTER
 
 
 def put_supplies_on_graveyard(game_state, supply, obstacle=False):
