@@ -1,0 +1,19 @@
+coverage:
+  range: 90..100
+  precision: 2
+  round: nearest
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 5%
+        base: auto
+    patch:
+      default:
+        enabled: no
+comment:
+  layout: "reach, diff"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes    
