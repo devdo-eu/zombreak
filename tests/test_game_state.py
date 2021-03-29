@@ -481,3 +481,11 @@ def test_play_game(zombie):
     winners = gs.play_game()
     assert len(winners) == 1
     assert winners[0] == 'Second'
+
+
+# def test_play_game_cpu():
+#     gs = GameState()
+#     gs.setup_game(['CPUFirst', 'CPUSecond', 'CPUThird'], 2)
+#     winners = gs.play_game()
+#     assert len(winners) == 1
+#     assert winners[0] == 'Second'
