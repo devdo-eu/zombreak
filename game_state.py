@@ -109,6 +109,7 @@ class GameState:
         elif card.bottom == ZombieType.FAST:
             card.flip()
         elif card.bottom == ZombieType.HORDE:
+            self.active_player.print('A terrifying zombie horde has engulfed the city!')
             self.event_horde()
             self.city_graveyard.append(card)
             return
@@ -132,8 +133,10 @@ class GameState:
                 card = self.get_city_card()
                 if card is not None:
                     card.flip()
+                    player.print(f'{str(card.top.value).capitalize()} has entered {player.name} shelter!')
                     player.zombies.append(card)
             else:
+                player.print(f'{str(card.top.value).capitalize()} has entered {player.name} shelter!')
                 player.zombies.append(card)
 
     def get_supplies(self):
