@@ -3,6 +3,7 @@ from zombie_enums import ZombieType
 from supply_enums import Supply
 from city_card import CityCard
 from player_shelter import PlayerShelter
+from cpu_player_shelter import CPUPlayerShelter
 from copy import copy
 import common_logic
 import defences
@@ -279,7 +280,10 @@ class GameState:
         self.prepare_supply_deck()
         self.players = []
         for name in players_names:
-            shelter = PlayerShelter(name)
+            if 'CPU' in name:
+                shelter = CPUPlayerShelter(name)
+            else:
+                shelter = PlayerShelter(name)
             for _ in range(initial_survivors):
                 shelter.survivors.append(self.get_city_card())
             for _ in range(3):
