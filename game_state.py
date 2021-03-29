@@ -113,6 +113,7 @@ class GameState:
             self.city_graveyard.append(card)
             return
 
+        self.active_player.print(f'{str(card.top.value).capitalize()} has entered {self.active_player.name} shelter!')
         self.active_player.zombies.append(card)
 
     def event_horde(self, second=False):
@@ -152,7 +153,7 @@ class GameState:
         shelter.supplies, shelter.obstacles, shelter.zombies, shelter.survivors = [], [], [], []
 
     def end_active_player_turn(self):
-        index = self.players.index(self.active_player)
+        index = self.players_still_in_game.index(self.active_player)
         loud_defence = self.defend_with_obstacles()
         self.zombies_eats_survivors()
         index = self.move_aftermath(index, loud_defence)

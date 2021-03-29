@@ -47,11 +47,11 @@ def test_play_axe_no_zombies(gs):
     shelter.zombies = []
     shelter.supplies = [Supply.AXE]
     weapons.play_axe(gs)
-    assert len(shelter.supplies) == 0
+    assert len(shelter.supplies) == 1
     assert len(shelter.zombies) == 0
-    assert len(gs.supply_graveyard) == 1
+    assert len(gs.supply_graveyard) == 0
     assert len(gs.city_graveyard) == 0
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 1
 
 
 def test_play_gun(gs, zombie, big_zombie, fast_zombie):

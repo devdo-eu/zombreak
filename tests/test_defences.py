@@ -129,3 +129,15 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(gs.supply_graveyard) == 4
     assert len(gs.city_graveyard) == 8
     assert len(tests.common.outputs) == 5
+
+
+def test_defend_with_mine_field_one_zombie(gs, big_zombie):
+    shelter = gs.active_player
+    shelter.zombies = [big_zombie]
+    shelter.obstacles = [Supply.MINE_FILED]
+    defences.defend_with_mine_field(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.obstacles) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 1
+    assert len(tests.common.outputs) == 3

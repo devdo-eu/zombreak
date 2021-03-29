@@ -35,7 +35,10 @@ def kill_zombie(game_state, supply, zombie_card, destroyed):
 
 
 def play_axe(game_state):
-    play_weapon(game_state, Supply.AXE)
+    if len(game_state.active_player.zombies) > 0:
+        play_weapon(game_state, Supply.AXE)
+    else:
+        game_state.active_player.print(f'You cannot play {Supply.AXE.value} for nothing!')
 
 
 def play_gun(game_state):
