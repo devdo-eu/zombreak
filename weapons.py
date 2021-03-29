@@ -46,7 +46,7 @@ def play_shotgun(game_state):
     big_inside, lesser_counter = count_zombies(game_state)
     if big_inside and lesser_counter == 0:
         play_weapon(game_state, Supply.SHOTGUN, strong=True)
-    elif lesser_counter == 1 and not big_inside:
+    elif lesser_counter <= 1 and not big_inside:
         play_weapon(game_state, Supply.SHOTGUN)
     elif lesser_counter > 1 and not big_inside:
         play_weapon(game_state, Supply.SHOTGUN, destroyed=False)
@@ -82,7 +82,7 @@ def play_sniper_rifle(game_state):
 
     if big_inside and lesser_counter == 0:
         play_weapon(game_state, Supply.SNIPER, strong=True)
-    elif lesser_counter > 0 and not big_inside:
+    elif lesser_counter >= 0 and not big_inside:
         play_weapon(game_state, Supply.SNIPER)
     else:
         message = 'What survivors should do[0/1]?\n[0]: kill big zombie\n[1]: kill lesser zombie\n>>'

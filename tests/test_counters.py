@@ -124,6 +124,21 @@ def test_play_drone_only_lesser_one_rival(gs, big_zombie):
     assert len(tests.common.outputs) == 2
 
 
+def test_play_drone_for_nothing(gs):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    gs.players[1].defeated = True
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.zombies = []
+    shelter.supplies = [Supply.DRONE]
+    counters.play_drone(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.supplies) == 1
+    assert len(gs.supply_graveyard) == 0
+    assert len(tests.common.outputs) == 1
+
+
 def test_play_chainsaw(gs):
     gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
     gs.active_player = gs.players[0]
@@ -168,7 +183,7 @@ def test_play_takeover(gs):
     assert gs.players[1].defeated
     assert len(gs.players[2].survivors) == 1
     assert len(gs.supply_graveyard) == 1
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_swap(gs, fast_zombie, zombie, big_zombie):
@@ -185,7 +200,7 @@ def test_play_swap(gs, fast_zombie, zombie, big_zombie):
     assert len(shelter.obstacles) == 2
     assert len(gs.players[1].zombies) == 4
     assert len(gs.players[1].obstacles) == 0
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_lure_out(gs, fast_zombie, zombie, big_zombie):
@@ -204,7 +219,26 @@ def test_play_lure_out(gs, fast_zombie, zombie, big_zombie):
     assert big_zombie in gs.players[1].zombies
     assert len(gs.players[2].zombies) == 1
     assert zombie in gs.players[2].zombies
-    assert len(tests.common.outputs) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(tests.common.outputs) == 4
+
+
+def test_play_lure_for_nothing(gs):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y', '1', '0', '0'])
+    shelter.supplies = [Supply.LURE_OUT]
+    shelter.zombies = []
+    gs.city_deck = [CityCard()]
+    counters.play_lure_out(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.supplies) == 1
+    assert len(gs.city_deck) == 1
+    assert len(gs.supply_graveyard) == 0
+    assert len(tests.common.outputs) == 1
 
 
 def test_play_lure_out_lesser_zombie(gs, fast_zombie, zombie, big_zombie):
@@ -223,7 +257,9 @@ def test_play_lure_out_lesser_zombie(gs, fast_zombie, zombie, big_zombie):
     assert fast_zombie in gs.players[1].zombies
     assert len(gs.players[2].zombies) == 1
     assert zombie in gs.players[2].zombies
-    assert len(tests.common.outputs) == 2
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(tests.common.outputs) == 4
 
 
 def test_play_lure_only_big(gs, zombie, big_zombie):
@@ -241,4 +277,24 @@ def test_play_lure_only_big(gs, zombie, big_zombie):
     assert big_zombie in gs.players[1].zombies
     assert len(gs.players[2].zombies) == 1
     assert zombie in gs.players[2].zombies
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(tests.common.outputs) == 4
+
+
+def test_play_lure_only_city(gs, zombie):
+    gs.players = [PlayerShelter('ZERO'), PlayerShelter('FIRST'), PlayerShelter('SECOND')]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['y', '1'])
+    shelter.supplies = [Supply.LURE_OUT]
+    shelter.zombies = []
+    gs.city_deck = [zombie, CityCard()]
+    counters.play_lure_out(gs)
+    assert len(shelter.zombies) == 0
+    assert len(gs.players[2].zombies) == 1
+    assert zombie in gs.players[2].zombies
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
     assert len(tests.common.outputs) == 2

@@ -15,6 +15,9 @@ class PlayerShelter:
 
     def gui_default(self, game_state):
         info = '-'*70 + '\n'
+        info += f'City: {len(game_state.city_deck)}, City Graveyard: {len(game_state.city_graveyard)}\n'
+        info += f'Supplies: {len(game_state.supply_deck)}, Used Supplies Pile: {len(game_state.supply_graveyard)}\n'
+        info += '-' * 70 + '\n'
         rivals = self.get_rivals_list(game_state)
         for rival in rivals:
             rival_info = self.get_shelter_info(rival)
@@ -50,7 +53,8 @@ class PlayerShelter:
         elif deck[0].top == ZombieType.SURVIVOR:
             city += 'City is quiet. This is an opportunity to let survivors in the city know about us!\n'
         else:
-            city += f'{deck[0].top.value} roam the city. Any noise will cause him to find our shelter!\n'
+            zombie_name = str(deck[0].top.value).capitalize()
+            city += f'{zombie_name} roam the city. Any noise will cause him to find our shelter!\n'
         return city
 
     @staticmethod

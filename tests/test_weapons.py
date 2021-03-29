@@ -42,6 +42,18 @@ def test_play_axe(gs, zombie, big_zombie, fast_zombie):
     assert len(tests.common.outputs) == 6
 
 
+def test_play_axe_no_zombies(gs):
+    shelter = gs.active_player
+    shelter.zombies = []
+    shelter.supplies = [Supply.AXE]
+    weapons.play_axe(gs)
+    assert len(shelter.supplies) == 0
+    assert len(shelter.zombies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 0
+    assert len(tests.common.outputs) == 2
+
+
 def test_play_gun(gs, zombie, big_zombie, fast_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
@@ -71,6 +83,18 @@ def test_play_gun(gs, zombie, big_zombie, fast_zombie):
     assert len(tests.common.outputs) == 8
 
 
+def test_play_gun_no_zombies(gs):
+    shelter = gs.active_player
+    shelter.zombies = []
+    shelter.supplies = [Supply.GUN]
+    weapons.play_gun(gs)
+    assert len(shelter.supplies) == 0
+    assert len(shelter.zombies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 0
+    assert len(tests.common.outputs) == 2
+
+
 def test_play_shotgun_one_big(gs, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [big_zombie]
@@ -81,6 +105,18 @@ def test_play_shotgun_one_big(gs, big_zombie):
     assert len(gs.supply_graveyard) == 1
     assert len(gs.city_graveyard) == 1
     assert len(tests.common.outputs) == 3
+
+
+def test_play_shotgun_no_zombies(gs):
+    shelter = gs.active_player
+    shelter.zombies = []
+    shelter.supplies = [Supply.SHOTGUN]
+    weapons.play_shotgun(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 0
+    assert len(tests.common.outputs) == 2
 
 
 def test_play_shotgun_many_big(gs, big_zombie):
@@ -277,4 +313,16 @@ def test_play_sniper_rifle_lesser_and_big_zombies(gs, fast_zombie, big_zombie):
     assert len(shelter.supplies) == 0
     assert len(gs.supply_graveyard) == 2
     assert len(gs.city_graveyard) == 2
+    assert len(tests.common.outputs) == 2
+
+
+def test_play_sniper_rifle_no_zombies(gs):
+    shelter = gs.active_player
+    shelter.zombies = []
+    shelter.supplies = [Supply.SNIPER]
+    weapons.play_sniper_rifle(gs)
+    assert len(shelter.zombies) == 0
+    assert len(shelter.supplies) == 0
+    assert len(gs.supply_graveyard) == 1
+    assert len(gs.city_graveyard) == 0
     assert len(tests.common.outputs) == 2

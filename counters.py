@@ -23,19 +23,21 @@ def play_sacrifice(game_state):
 
 def play_drone(game_state):
     shelter = game_state.active_player
+    if len(shelter.zombies) == 0:
+        shelter.print(f'You cannot use {Supply.DRONE.value} for nothing...')
+    else:
+        def use_drone(zombie):
+            choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
+            shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
+            message = f'Where {zombie.top.value} will be lured?\n' + choice_message
+            action = get_action(game_state, message, possible_actions)
+            shelter.zombies.remove(zombie)
+            rivals[int(action)].zombies.append(zombie)
 
-    def use_drone(zombie):
-        choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
-        shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
-        message = f'Where {zombie.top.value} will be lured?\n' + choice_message
-        action = get_action(game_state, message, possible_actions)
-        shelter.zombies.remove(zombie)
-        rivals[int(action)].zombies.append(zombie)
-
-    message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
-              '[1]: lure lesser zombie out of shelter\n>>'
-    count_zombies_and_execute_function(game_state, message, use_drone)
-    put_supplies_on_graveyard(game_state, Supply.DRONE)
+        message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
+                  '[1]: lure lesser zombie out of shelter\n>>'
+        count_zombies_and_execute_function(game_state, message, use_drone)
+        put_supplies_on_graveyard(game_state, Supply.DRONE)
 
 
 def play_chainsaw(game_state):
@@ -69,6 +71,7 @@ def play_takeover(game_state):
     action = get_action(game_state, message, possible_actions)
     rival = rivals[int(action)]
     survivor_card = rival.survivors[0]
+    shelter.print(f'Survivor from {rival.name} shelter join to us!')
     rival.survivors.remove(survivor_card)
     if len(rival.survivors) == 0:
         shelter.print(f'No one was left in {rival.name} shelter...')
@@ -84,6 +87,7 @@ def play_swap(game_state):
     action = get_action(game_state, message, possible_actions)
     rival = rivals[int(action)]
     shelter.zombies, rival.zombies = rival.zombies, shelter.zombies
+    shelter.print(f'Your survivors used {Supply.SWAP.value} to swap shelters with {rival.name}')
     shelter.obstacles, rival.obstacles = rival.obstacles, shelter.obstacles
     shelter.print(f'The sounds of the {Supply.SWAP.value} could be heard from miles away!')
     put_supplies_on_graveyard(game_state, Supply.SWAP)
@@ -92,6 +96,7 @@ def play_swap(game_state):
 def play_lure_out(game_state):
     shelter = game_state.active_player
     choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
+    used = False
     if len(game_state.city_deck) > 0:
         top_card = game_state.city_deck[0]
         if top_card.top != ZombieType.SURVIVOR:
@@ -101,17 +106,27 @@ def play_lure_out(game_state):
                 message = 'Which shelter should the survivors lure the zombies into?\n' + choice_message
                 action = get_action(game_state, message, possible_actions)
                 rival = rivals[int(action)]
-                rival.zombies.append(game_state.get_city_card())
+                card = game_state.get_city_card()
+                shelter.print(f'One of survivors lure {card.top.value} from city into {rival.name} shelter!')
+                rival.zombies.append(card)
+                used = True
 
-    def lure_out(zombie_card):
-        shelter.print(f'One of survivors used {Supply.LURE_OUT} to lure {zombie_card.top.value} out...')
-        message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
-        action = get_action(game_state, message, possible_actions)
-        rival = rivals[int(action)]
-        rival.zombies.append(zombie_card)
-        shelter.zombies.remove(zombie_card)
+    if len(shelter.zombies) > 0:
+        message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
+                  '[1]: lure lesser zombie out of shelter\n>>'
 
-    message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
-              '[1]: lure lesser zombie out of shelter\n>>'
-    count_zombies_and_execute_function(game_state, message, lure_out)
-    put_supplies_on_graveyard(game_state, Supply.LURE_OUT)
+        def lure_out(zombie_card):
+            shelter.print(f'One of survivors used {Supply.LURE_OUT.value} to lure {zombie_card.top.value} out...')
+            message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
+            action = get_action(game_state, message, possible_actions)
+            rival = rivals[int(action)]
+            rival.zombies.append(zombie_card)
+            shelter.print(f'One of survivors lure {zombie_card.top.value} from our shelter into {rival.name} shelter!')
+            shelter.zombies.remove(zombie_card)
+
+        count_zombies_and_execute_function(game_state, message, lure_out)
+        put_supplies_on_graveyard(game_state, Supply.LURE_OUT)
+    elif used:
+        put_supplies_on_graveyard(game_state, Supply.LURE_OUT)
+    else:
+        shelter.print(f'You cannot use {Supply.LURE_OUT.value} for nothing...')
