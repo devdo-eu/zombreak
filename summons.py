@@ -16,6 +16,9 @@ def play_summon(game_state, summon):
             card = game_state.get_city_card()
             shelter.print(f'New survivor has arrived to "{shelter.name}" shelter!')
             shelter.survivors.append(card)
+        elif summon == Supply.RADIO:
+            shelter.print(f'Survivors cannot use {summon.value} when zombies roam all over the city!')
+            return
         else:
             shelter.print('Nobody else arrived...')
             break

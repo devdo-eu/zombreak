@@ -32,10 +32,11 @@ def play_drone(game_state):
             message = f'Where {zombie.top.value} will be lured?\n' + choice_message
             action = get_action(game_state, message, possible_actions)
             shelter.zombies.remove(zombie)
+            shelter.print(f'{str(zombie.top.value).capitalize()} was lured to "{rivals[int(action)].name}" shelter!')
             rivals[int(action)].zombies.append(zombie)
 
         message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
-                  '[1]: lure lesser zombie out of shelter\n>>'
+                  '[1]: lure lesser zombie out of shelter\n>'
         count_zombies_and_execute_function(game_state, message, use_drone)
         put_supplies_on_graveyard(game_state, Supply.DRONE)
 
@@ -100,7 +101,8 @@ def play_lure_out(game_state):
     if len(game_state.city_deck) > 0:
         top_card = game_state.city_deck[0]
         if top_card.top != ZombieType.SURVIVOR:
-            message = f'There is {top_card.top.value} in the city. Should the survivors lure it to shelter[y/n]? '
+            zombie_cap = str(top_card.top.value).capitalize()
+            message = f'{zombie_cap} is in the city. Should the survivors lure it to rival shelter[y/n]?\n>'
             action = get_action(game_state, message, ['y', 'n'])
             if action == 'y':
                 message = 'Which shelter should the survivors lure the zombies into?\n' + choice_message
@@ -113,7 +115,7 @@ def play_lure_out(game_state):
 
     if len(shelter.zombies) > 0:
         message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
-                  '[1]: lure lesser zombie out of shelter\n>>'
+                  '[1]: lure lesser zombie out of shelter\n>'
 
         def lure_out(zombie_card):
             shelter.print(f'One of survivors used {Supply.LURE_OUT.value} to lure {zombie_card.top.value} out...')

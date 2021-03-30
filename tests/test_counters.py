@@ -69,7 +69,7 @@ def test_play_drone(gs, fast_zombie, zombie, big_zombie):
     assert len(gs.players[1].zombies) == 0
     assert len(gs.players[2].zombies) == 1
     assert len(gs.supply_graveyard) == 1
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_drone_chose_lesser(gs, fast_zombie, zombie, big_zombie):
@@ -87,7 +87,7 @@ def test_play_drone_chose_lesser(gs, fast_zombie, zombie, big_zombie):
     assert len(gs.players[1].zombies) == 0
     assert len(gs.players[2].zombies) == 1
     assert len(gs.supply_graveyard) == 1
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_drone_only_big(gs, big_zombie):
@@ -104,7 +104,7 @@ def test_play_drone_only_big(gs, big_zombie):
     assert len(gs.players[1].zombies) == 1
     assert len(gs.players[2].zombies) == 0
     assert len(gs.supply_graveyard) == 1
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_drone_only_lesser_one_rival(gs, big_zombie):
@@ -121,7 +121,7 @@ def test_play_drone_only_lesser_one_rival(gs, big_zombie):
     assert len(gs.players[1].zombies) == 0
     assert len(gs.players[2].zombies) == 1
     assert len(gs.supply_graveyard) == 1
-    assert len(tests.common.outputs) == 2
+    assert len(tests.common.outputs) == 3
 
 
 def test_play_drone_for_nothing(gs):

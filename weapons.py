@@ -56,7 +56,7 @@ def play_shotgun(game_state):
         play_weapon(game_state, Supply.SHOTGUN)
     else:
         message = 'What survivors should do [0/1]?\n[0]: kill big zombie\n' \
-                  f'[1]: kill up to two lesser zombies ({lesser_counter} inside)\n>>'
+                  f'[1]: kill up to two lesser zombies ({lesser_counter} inside)\n>'
         action = get_action(game_state, message, ['0', '1'])
         if action == '0':
             play_weapon(game_state, Supply.SHOTGUN, strong=True)
@@ -72,7 +72,7 @@ def play_sniper_rifle(game_state):
     if len(game_state.city_deck) > 0:
         top_card = game_state.city_deck[0]
         if top_card.top != ZombieType.SURVIVOR:
-            message = f'There is {top_card.top.value} in the city. Should the survivors shoot it[y/n]? '
+            message = f'There is {top_card.top.value} in the city. Should the survivors shoot it[y/n]?\n>'
             action = get_action(game_state, message, ['y', 'n'])
             if action == 'y':
                 shelter.print(f'One of survivors killed {top_card.top.value} with {Supply.SNIPER.value}!')
@@ -88,7 +88,7 @@ def play_sniper_rifle(game_state):
     elif lesser_counter >= 0 and not big_inside:
         play_weapon(game_state, Supply.SNIPER)
     else:
-        message = 'What survivors should do[0/1]?\n[0]: kill big zombie\n[1]: kill lesser zombie\n>>'
+        message = 'What survivors should do[0/1]?\n[0]: kill big zombie\n[1]: kill lesser zombie\n>'
         action = get_action(game_state, message, ['0', '1'])
         if action == '0':
             play_weapon(game_state, Supply.SNIPER, strong=True)
