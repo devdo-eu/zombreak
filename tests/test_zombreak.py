@@ -9,6 +9,16 @@ def test_main():
         assert str(ex) == 'Wrong number of players!'
 
     try:
-        main(dumper_factory(), helper_factory(['5', '6']))
+        main(dumper_factory(), helper_factory(['7']))
+    except Exception as ex:
+        assert str(ex) == 'Wrong number of players!'
+
+    try:
+        main(dumper_factory(), helper_factory(['6', '6']))
+    except Exception as ex:
+        assert str(ex) == 'Wrong number of initial survivors!'
+
+    try:
+        main(dumper_factory(), helper_factory(['6', '0']))
     except Exception as ex:
         assert str(ex) == 'Wrong number of initial survivors!'
