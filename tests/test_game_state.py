@@ -460,6 +460,66 @@ def test_play_round_play_axe_barricades_and_end_round(zombie, fast_zombie):
     assert gs.active_player != shelter
 
 
+def test_play_round_play_sacrifice_wit_last_survivor(zombie, fast_zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1'), PlayerShelter('2')]
+    gs.players[1].survivors = [CityCard()]
+    gs.players[2].survivors = [CityCard()]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0', '1', '0'])
+    shelter.zombies = [zombie, fast_zombie]
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.SACRIFICE, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert len(shelter.supplies) == 0
+    assert len(shelter.zombies) == 0
+    assert len(shelter.survivors) == 0
+    assert shelter.defeated
+    assert len(gs.city_graveyard) == 1
+    assert len(gs.supply_graveyard) == 3
+    assert gs.active_player != shelter
+
+
+def test_play_round_win_by_takeover(zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.players[1].survivors = [CityCard()]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0'])
+    shelter.zombies = [zombie]
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.TAKEOVER, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert not shelter.defeated
+    assert gs.players[1].defeated
+    assert gs.finished
+
+
+def test_play_round_eliminate_by_takeover(zombie):
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1'), PlayerShelter('2')]
+    gs.players[2].survivors = [CityCard()]
+    gs.players[1].survivors = [CityCard()]
+    gs.active_player = gs.players[0]
+    shelter = gs.active_player
+    shelter.print = dumper_factory()
+    shelter.input = helper_factory(['0', '0', '0', '0', 'y'])
+    shelter.zombies = [zombie]
+    shelter.survivors = [CityCard()]
+    shelter.supplies = [Supply.TAKEOVER, Supply.BARRICADES, Supply.ALARM]
+    gs.play_round()
+    assert not shelter.defeated
+    assert not gs.players[2].defeated
+    assert len(shelter.survivors) == 2
+    assert gs.players[1].defeated
+    assert not gs.finished
+    assert gs.active_player != shelter
+
+
 def test_setup_game():
     gs = GameState()
     gs.setup_game(['First', 'Second', 'Third'], 3)
@@ -492,4 +552,6 @@ def test_play_game_cpu():
         print(f'Test# {index}')
         gs = GameState()
         gs.setup_game(['CPU1', 'CPU2', 'CPU3'], 2)
+        for player in gs.players:
+            player.assign_new_printer(dumper_factory())
         gs.play_game()
