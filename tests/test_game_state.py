@@ -5,6 +5,7 @@ from zombie_enums import ZombieType
 from supply_enums import Supply
 from tests.common import fast_zombie, zombie, big_zombie, helper_factory, dumper_factory
 import tests.common
+import pytest
 
 
 def test_sanity_check():
@@ -547,11 +548,12 @@ def test_play_game(zombie):
     assert winners[0] == 'Second'
 
 
-def test_play_game_cpu():
-    for index in range(250):
-        print(f'Test# {index}')
+@pytest.mark.parametrize('number_of_cpus', [2, 3, 4, 5, 6])
+def test_play_game_cpu(number_of_cpus):
+    names = [f'CPU{index}' for index in range(number_of_cpus)]
+    for index in range(10):
         gs = GameState()
-        gs.setup_game(['CPU1', 'CPU2', 'CPU3'], 2)
+        gs.setup_game(names, 2)
         for player in gs.players:
             player.print = dumper_factory()
         gs.play_game()
