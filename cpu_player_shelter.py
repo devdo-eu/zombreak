@@ -73,7 +73,7 @@ class CPUPlayerShelter(PlayerShelter):
                 self.defend_with_mine_field()
             else:
                 self.defend_with_alarm()
-            self.print(self.planned_moves[0])
+            # self.print(self.planned_moves[0])
             return self.planned_moves[0]
         else:
             self.move_counter += 1
@@ -81,11 +81,11 @@ class CPUPlayerShelter(PlayerShelter):
                 move = self.planned_moves[self.move_counter]
             else:
                 move = str(self.supply_amount)
-            self.print(message + move)
+            # self.print(message + move)
             return move
 
     def cpu_ui(self, game_state):
-        self.gui_default(game_state)
+        # self.gui_default(game_state)
         self.game_state = game_state
         self.move_counter = -1
         self.planned_moves = []

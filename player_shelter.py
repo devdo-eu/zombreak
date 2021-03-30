@@ -16,8 +16,8 @@ class PlayerShelter:
     def gui_default(self, game_state):
         bar_length = 80
         info = '-' * bar_length + '\n'
-        info += f'City: {len(game_state.city_deck)}, City Graveyard: {len(game_state.city_graveyard)}\n'
-        info += f'Supplies: {len(game_state.supply_deck)}, Used Supplies Pile: {len(game_state.supply_graveyard)}\n'
+        info += f'City: {len(game_state.city_deck)}({len(game_state.city_graveyard)}), ' \
+                f'Supplies: {len(game_state.supply_deck)}({len(game_state.supply_graveyard)})\n'
         info += '-' * bar_length + '\n'
         rivals = self.get_rivals_list(game_state)
         for rival in rivals:
@@ -25,18 +25,16 @@ class PlayerShelter:
                 rival_info = self.get_shelter_info(rival)
                 info += rival_info + '-' * bar_length + '\n'
 
-        supplies = self.obstacle_or_supplies_info(self, False)
         city = self.news_from_city(game_state)
-        my_info = 'Your ' + self.get_shelter_info(self) + f'Supplies: {supplies[:-2]}\n' + city
+        my_info = f'Your {self.get_shelter_info(self)}\n{city}'
         self.print(info + my_info)
 
     def get_shelter_info(self, shelter):
         big_zombies, lesser_zombies = self.zombie_counter(shelter)
-        obstacles = self.obstacle_or_supplies_info(shelter)
-        info = f'Shelter: {shelter.name}\n' \
-               f'Survivors: {len(shelter.survivors)}\n' \
-               f'Obstacles: {obstacles[:-2]}\n' \
-               f'All Zombies: {len(shelter.zombies)}, Big: {big_zombies}, Lesser: {lesser_zombies}\n'
+        obstacles = self.obstacle_info(shelter)
+        info = f'Shelter: "{shelter.name}", Obstacles: {obstacles[:-2]}\n' \
+               f'Survivors: {len(shelter.survivors)}, All Zombies: {len(shelter.zombies)}, ' \
+               f'Big: {big_zombies}, Lesser: {lesser_zombies}\n'
         return info
 
     def get_rivals_list(self, game_state):
@@ -60,12 +58,9 @@ class PlayerShelter:
         return city
 
     @staticmethod
-    def obstacle_or_supplies_info(shelter, obstacle=True):
+    def obstacle_info(shelter):
         info = ''
-        objects = shelter.obstacles
-        if not obstacle:
-            objects = shelter.supplies
-        for obj in objects:
+        for obj in shelter.obstacles:
             info += f'{obj.value}, '
         return info
 

@@ -14,7 +14,7 @@ def play_summon(game_state, summon):
     for _ in range(arrives):
         if len(game_state.city_deck) > 0 and game_state.city_deck[0].top == ZombieType.SURVIVOR:
             card = game_state.get_city_card()
-            shelter.print('New survivor has arrived at your shelter!')
+            shelter.print(f'New survivor has arrived to "{shelter.name}" shelter!')
             shelter.survivors.append(card)
         else:
             shelter.print('Nobody else arrived...')
