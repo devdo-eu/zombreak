@@ -287,7 +287,7 @@ def test_defend_wit_mine_field(game, big_zombie, zombie):
     cpu.zombies = [big_zombie, big_zombie, zombie, big_zombie]
     cpu.gui(game)
     cpu.defend_with_mine_field()
-    assert len(cpu.planned_moves) == 1
+    assert len(cpu.planned_moves) == 3
     assert cpu.planned_moves[0] == 'y'
 
     cpu = game.active_player
@@ -303,5 +303,5 @@ def test_defend_wit_mine_field(game, big_zombie, zombie):
     cpu.zombies = [big_zombie]
     cpu.gui(game)
     cpu.defend_with_mine_field()
-    assert len(cpu.planned_moves) == 1
+    assert len(cpu.planned_moves) == 3
     assert cpu.planned_moves[0] == 'y'
