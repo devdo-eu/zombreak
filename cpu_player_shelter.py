@@ -2,6 +2,7 @@ from zombie_enums import ZombieType
 from supply_enums import Supply, SupplyType
 from player_shelter import PlayerShelter
 import common_logic
+from copy import copy
 from secrets import choice
 
 
@@ -9,10 +10,18 @@ class CPUPlayerShelter(PlayerShelter):
     def __init__(self, name='', print_foo=print):
         PlayerShelter.__init__(self, name, self.cpu_input, print_foo)
         self.gui = self.cpu_ui
-        self.policy = {'discard': False, 'counter_summons': False, 'end_turn': False}
+        self.print = self.emergency_decorator(self.print)
         self.move_counter = -1
         self.planned_moves = []
         self.game_state = None
+
+    def emergency_decorator(self, print_foo):
+        def foo(message):
+            if 'No such action as' in message:
+                self.move_counter = -1
+                self.planned_moves = ['0']
+            # print_foo(message)
+        return foo
 
     @property
     def zombie_amount(self):
@@ -66,62 +75,88 @@ class CPUPlayerShelter(PlayerShelter):
         return [common_logic.is_loud(supply) for supply in self.supplies]
 
     def cpu_input(self, message):
-        self.move_counter += 1
-        if self.move_counter < len(self.planned_moves):
-            move = self.planned_moves[self.move_counter]
-        else:
-            move = str(self.supply_amount)
-
         if '[y/n]?' in message and 'Do you want to use' in message:
-            move = 'y'
-        self.print(message + move)
-        return move
+            if Supply.BARRICADES.value in message:
+                self.defend_with_barricades()
+            elif Supply.MINE_FILED.value in message:
+                self.defend_with_mine_field()
+            else:
+                self.defend_with_alarm()
+            self.print(self.planned_moves[0])
+            return self.planned_moves[0]
+        else:
+            self.move_counter += 1
+            if self.move_counter < len(self.planned_moves):
+                move = self.planned_moves[self.move_counter]
+            else:
+                move = str(self.supply_amount)
+            self.print(message + move)
+            return move
 
     def cpu_ui(self, game_state):
-        # self.gui_default(game_state)
+        self.gui_default(game_state)
         self.game_state = game_state
         self.move_counter = -1
         self.planned_moves = []
-        for key in self.policy:
-            self.policy[key] = False
         if Supply.TAKEOVER in self.supplies:
             rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
+            if len(rivals_idx) == 0:
+                return
             self.planned_moves = [str(self.supplies.index(Supply.TAKEOVER)), choice(rivals_idx)]
-        if self.zombie_amount > 0:
+        elif self.summons_amount > 0 and not self.zombie_in_city:
+            self.play_summons()
+        elif self.summons_amount > 0 and self.zombie_in_city and self.zombie_amount == 0:
+            self.change_city_state()
+        elif self.defences_amount > 0 and (self.obstacle_amount < 3 or self.zombie_amount > 2):
+            self.play_defences()
+        elif self.zombie_amount > 0:
             self.defend_policy()
-        if len(self.planned_moves) > 0:
-            return
-        if self.defences_amount > 0 and (self.obstacle_amount < 2 or self.zombie_amount > 2):
-            self.planned_moves = [str(self.supplies_types.index(SupplyType.DEFENCE))]
-        if self.summons_amount > 0:
-            self.summon_policy()
+        elif not self.zombie_in_city:
+            self.change_city_state()
+        elif self.zombie_in_city:
+            self.play_aggressively()
 
-        if len(self.planned_moves) > 0:
-            return
-
-        if Supply.CHAINSAW in self.supplies and not self.zombie_in_city:
+    def play_aggressively(self):
+        if Supply.LURE_OUT in self.supplies:
+            self.use_lure_out()
+        elif Supply.SWAP in self.supplies and self.counters_amount + self.weapons_amount > 1:
+            self.use_swap()
+        elif Supply.CHAINSAW in self.supplies and self.counters_amount + self.weapons_amount > 1:
             self.use_chainsaw()
-            return
-        self.discard_and_counter_summons_policies()
-        self.end_turn_policy()
 
-    def use_chainsaw(self):
-        rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
-        shelters_dict = {}
-        for index, shelter in enumerate(self.game_state.players):
-            if shelter.name != self.name and len(shelter.zombies) == 0:
-                shelters_dict[len(shelter.obstacles)] = index
-        index = max(shelters_dict, default=choice(rivals_idx))
-        self.planned_moves = [str(self.supplies.index(Supply.CHAINSAW)), str(index)]
+    def change_city_state(self):
+        if Supply.SNIPER in self.supplies and self.zombie_in_city:
+            self.use_sniper()
+        elif Supply.LURE_OUT in self.supplies and self.zombie_in_city:
+            self.use_lure_out()
+        elif True in self.supplies_loud and self.weapons_amount + self.counters_amount > 1:
+            self.play_card_for_noise()
+        elif True in self.supplies_loud and self.summons_amount > 1:
+            self.play_card_for_noise()
 
-    def summon_policy(self):
-        if not self.zombie_in_city:
-            if Supply.RADIO in self.supplies:
-                self.planned_moves = [str(self.supplies.index(Supply.RADIO))]
-            elif Supply.FLARE_GUN in self.supplies:
-                self.planned_moves = [str(self.supplies.index(Supply.FLARE_GUN))]
-            elif Supply.MEGAPHONE in self.supplies:
-                self.planned_moves = [str(self.supplies.index(Supply.MEGAPHONE))]
+    def play_card_for_noise(self):
+        tmp = copy(self.supplies)
+        if Supply.MEGAPHONE in self.supplies:
+            tmp.pop(tmp.index(Supply.MEGAPHONE))
+            tmp.append(Supply.MEGAPHONE)
+        if Supply.FLARE_GUN in self.supplies:
+            tmp.pop(tmp.index(Supply.FLARE_GUN))
+            tmp.append(Supply.FLARE_GUN)
+        tmp_loud = [common_logic.is_loud(supply) for supply in tmp]
+        obj = tmp[tmp_loud.index(True)]
+        index = self.supplies.index(obj)
+        self.planned_moves = [str(index)]
+
+    def play_summons(self):
+        if Supply.RADIO in self.supplies:
+            self.planned_moves = [str(self.supplies.index(Supply.RADIO))]
+        elif Supply.FLARE_GUN in self.supplies:
+            self.planned_moves = [str(self.supplies.index(Supply.FLARE_GUN))]
+        elif Supply.MEGAPHONE in self.supplies:
+            self.planned_moves = [str(self.supplies.index(Supply.MEGAPHONE))]
+
+    def play_defences(self):
+        self.planned_moves = [str(self.supplies_types.index(SupplyType.DEFENCE))]
 
     def defend_policy(self):
         if self.weapons_amount > 0:
@@ -129,6 +164,17 @@ class CPUPlayerShelter(PlayerShelter):
 
         if self.counters_amount > 0:
             self.defend_with_counter()
+
+    def defend_with_weapon(self):
+        big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+        if Supply.AXE in self.supplies and lesser_count > 0:
+            self.planned_moves = [str(self.supplies.index(Supply.AXE))]
+        elif Supply.GUN in self.supplies and lesser_count > 0:
+            self.planned_moves = [str(self.supplies.index(Supply.GUN))]
+        elif Supply.SHOTGUN in self.supplies:
+            self.use_shotgun()
+        elif Supply.SNIPER in self.supplies:
+            self.use_sniper(defend=True)
 
     def defend_with_counter(self):
         if Supply.SWAP in self.supplies:
@@ -139,6 +185,27 @@ class CPUPlayerShelter(PlayerShelter):
             self.use_lure_out()
         elif Supply.SACRIFICE in self.supplies and self.zombie_amount > 1:
             self.use_sacrifice()
+
+    def defend_with_mine_field(self):
+        if self.obstacles.count(Supply.ALARM) == 0 and self.zombie_amount > self.obstacles.count(Supply.BARRICADES):
+            self.planned_moves = ['y']
+        elif self.zombie_amount / 2 <= self.obstacles.count(Supply.MINE_FILED):
+            self.planned_moves = ['y']
+        else:
+            self.planned_moves = ['n']
+
+    def defend_with_alarm(self):
+        if self.zombie_amount / 2 > self.obstacles.count(Supply.MINE_FILED) \
+                and self.zombie_amount > self.obstacles.count(Supply.BARRICADES):
+            self.planned_moves = ['y']
+        else:
+            self.planned_moves = ['n']
+
+    def defend_with_barricades(self):
+        if self.obstacles.count(Supply.ALARM) == 0 and self.obstacles.count(Supply.MINE_FILED) < self.zombie_amount / 2:
+            self.planned_moves = ['y']
+        else:
+            self.planned_moves = ['n']
 
     def use_sacrifice(self):
         rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
@@ -162,6 +229,8 @@ class CPUPlayerShelter(PlayerShelter):
 
     def use_drone(self):
         rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
+        if len(rivals_idx) == 0:
+            return
         big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
         if lesser_count > 0 and big_zombie:
             self.planned_moves = \
@@ -170,47 +239,46 @@ class CPUPlayerShelter(PlayerShelter):
             self.planned_moves = [str(self.supplies.index(Supply.DRONE)), choice(rivals_idx)]
 
     def use_swap(self):
-        rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
         shelters_dict = {}
-        for index, shelter in enumerate(self.game_state.players):
+        _, _, rivals = common_logic.find_rivals_and_build_action_message(self.game_state)
+        for index, shelter in enumerate(rivals):
             if shelter.name != self.name and len(shelter.zombies) == 0:
                 shelters_dict[len(shelter.obstacles)] = index
-        index = max(shelters_dict, default=choice(rivals_idx))
-        self.planned_moves = [str(self.supplies.index(Supply.SWAP)), str(index)]
+        if len(shelters_dict) > 0:
+            index = shelters_dict[max(shelters_dict)]
+            if len(self.game_state.players[index].obstacles) >= self.obstacle_amount:
+                if index >= len(self.game_state.players_still_in_game) - 1:
+                    self.planned_moves = [str(self.supplies.index(Supply.SWAP)), '0']
+                else:
+                    self.planned_moves = [str(self.supplies.index(Supply.SWAP)), str(index)]
 
-    def defend_with_weapon(self):
+    def use_shotgun(self):
         big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
-        if Supply.SHOTGUN in self.supplies:
-            self.planned_moves = [str(self.supplies.index(Supply.SHOTGUN))]
-            if lesser_count > 1:
-                self.planned_moves.append('1')
-            elif big_zombie and lesser_count > 0:
-                self.planned_moves.append(choice(['0', '1']))
-        elif Supply.GUN in self.supplies and lesser_count > 0 and not self.zombie_in_city:
-            self.planned_moves = [str(self.supplies.index(Supply.GUN))]
-        elif Supply.AXE in self.supplies and lesser_count > 0:
-            self.planned_moves = [str(self.supplies.index(Supply.AXE))]
-        elif Supply.SNIPER in self.supplies:
-            if not self.zombie_in_city:
-                self.planned_moves = [str(self.supplies.index(Supply.SNIPER)), choice(['0', '1'])]
-            else:
-                self.planned_moves = [str(self.supplies.index(Supply.SNIPER)), 'n', choice(['0', '1'])]
+        self.planned_moves = [str(self.supplies.index(Supply.SHOTGUN))]
+        if lesser_count > 1:
+            self.planned_moves.append('1')
+        elif big_zombie:
+            self.planned_moves.append('0')
 
-    def end_turn_policy(self):
-        end_turn = True
-        for policy in self.policy.values():
-            if policy:
-                end_turn = False
-                break
-        self.policy['end_turn'] = end_turn
-        if self.policy['end_turn']:
-            self.planned_moves = [str(self.supply_amount)]
+    def use_sniper(self, defend=False):
+        if not self.zombie_in_city:
+            self.planned_moves = [str(self.supplies.index(Supply.SNIPER)), choice(['0', '1'])]
+        elif defend:
+            self.planned_moves = [str(self.supplies.index(Supply.SNIPER)), 'n', choice(['0', '1'])]
+        else:
+            self.planned_moves = [str(self.supplies.index(Supply.SNIPER)), 'y']
 
-    def discard_and_counter_summons_policies(self):
-        if self.zombie_amount == 0 and self.city_amount > 3 and self.summons_amount == 0 and self.supply_amount == 3:
-            self.policy['discard'] = True
-            self.planned_moves = [str(len(self.supplies)), str(len(self.supplies))]
-
-            if True in self.supplies_loud and self.weapons_amount > 1 and not self.zombie_in_city:
-                self.policy['counter_summons'] = True
-                self.planned_moves = [str(self.supplies_loud.index(True))]
+    def use_chainsaw(self):
+        shelters_dict = {}
+        rivals = []
+        for rival in self.game_state.players:
+            if rival.name != self.name and not rival.defeated and len(rival.obstacles) > 0:
+                rivals.append(rival)
+        for index, shelter in enumerate(rivals):
+            if len(shelter.zombies) == 0:
+                shelters_dict[len(shelter.obstacles)] = index
+        if len(shelters_dict) > 0:
+            index = shelters_dict[max(shelters_dict)]
+            self.planned_moves = [str(self.supplies.index(Supply.CHAINSAW)), str(index)]
+        else:
+            self.planned_moves = [str(self.supplies.index(Supply.CHAINSAW)), '0']
