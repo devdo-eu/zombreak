@@ -359,6 +359,7 @@ def test_discard_supplies_move():
 def test_play_round():
     gs = GameState()
     gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.players[1].survivors = [CityCard()]
     gs.active_player = gs.players[0]
     gs.supply_deck = [Supply.DRONE, Supply.DRONE]
     shelter = gs.active_player
@@ -377,6 +378,7 @@ def test_play_round():
 def test_play_round_end_round():
     gs = GameState()
     gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.players[1].survivors = [CityCard()]
     gs.active_player = gs.players[0]
     shelter = gs.active_player
     shelter.print = dumper_factory()
@@ -426,6 +428,7 @@ def test_play_round_end_round_one_shelter_destroyed(zombie):
 def test_play_round_use_loud_tool():
     gs = GameState()
     gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.players[1].survivors = [CityCard()]
     gs.active_player = gs.players[0]
     gs.city_deck = [CityCard()]
     shelter = gs.active_player
@@ -442,6 +445,7 @@ def test_play_round_use_loud_tool():
 def test_play_round_play_axe_barricades_and_end_round(zombie, fast_zombie):
     gs = GameState()
     gs.players = [PlayerShelter('0'), PlayerShelter('1')]
+    gs.players[1].survivors = [CityCard()]
     gs.active_player = gs.players[0]
     shelter = gs.active_player
     shelter.print = dumper_factory()
@@ -483,9 +487,9 @@ def test_play_game(zombie):
     assert winners[0] == 'Second'
 
 
-# def test_play_game_cpu():
-#     gs = GameState()
-#     gs.setup_game(['CPUFirst', 'CPUSecond', 'CPUThird'], 2)
-#     winners = gs.play_game()
-#     assert len(winners) == 1
-#     assert winners[0] == 'Second'
+def test_play_game_cpu():
+    for index in range(500):
+        print(f'Test# {index}')
+        gs = GameState()
+        gs.setup_game(['CPU1', 'CPU2', 'CPU3'], 2)
+        gs.play_game()

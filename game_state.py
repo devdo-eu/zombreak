@@ -182,13 +182,13 @@ class GameState:
             self.active_player.print('No more living survivors inside shelter...')
             self.active_player.defeated = True
             index -= 1
-            self.clean_up_shelter(self.active_player)
         else:
             self.get_supplies()
             if loud_defence:
                 self.active_player.print('Loud noises in your shelter could be heard from miles away...')
                 self.zombie_show_up()
             self.active_player.print('Your turn has ended.')
+        self.clean_up_table()
         return index
 
     def zombies_eats_survivors(self):
@@ -217,7 +217,11 @@ class GameState:
 
         turn_end = False
         discarded = False
-        while len(shelter.supplies) > 0 and not turn_end:
+        while len(shelter.supplies) > 0 and not turn_end and not self.finished:
+            self.clean_up_table()
+            if len(self.players_still_in_game) < 2:
+                self.finished = True
+                continue
             if discarded:
                 turn_end = self.discard_supplies_move(turn_end)
                 continue
@@ -234,6 +238,14 @@ class GameState:
             else:
                 turn_end = True
         self.end_active_player_turn()
+
+    def clean_up_table(self):
+        for player in self.players:
+            if len(player.survivors) == 0:
+                player.defeated = True
+            not_clean = len(player.supplies) > 0 or len(player.zombies) > 0 or len(player.obstacles) > 0
+            if player.defeated and not_clean:
+                self.clean_up_shelter(player)
 
     def ask_player_what_move(self):
         shelter = self.active_player
@@ -295,7 +307,13 @@ class GameState:
         while not self.finished:
             self.play_round()
         winners = []
+        survivors_amount = []
         for shelter in self.players:
             if len(shelter.survivors) > 0:
-                winners.append(shelter.name)
+                survivors_amount.append(len(shelter.survivors))
+        if len(survivors_amount) > 0:
+            max_survivors = max(survivors_amount)
+            for shelter in self.players:
+                if len(shelter.survivors) == max_survivors:
+                    winners.append(shelter.name)
         return winners
