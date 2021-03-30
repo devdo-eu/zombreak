@@ -47,6 +47,7 @@ class GameState:
         self.players = []
         self.active_player = None
         self.final_attack = False
+        self.last_supplies_taken = False
         self.finished = False
 
     @property
@@ -71,9 +72,10 @@ class GameState:
 
     def get_city_card(self):
         if len(self.city_deck) < 1:
-            self.final_attack = True
             return None
         card = self.city_deck.pop(0)
+        if len(self.city_deck) == 0:
+            self.final_attack = True
         return card
 
     def shuffle_supply_graveyard(self):
@@ -85,7 +87,7 @@ class GameState:
     def get_supply_card(self):
         if len(self.supply_deck) < 1:
             self.shuffle_supply_graveyard()
-        if len(self.supply_deck) < 1 or self.final_attack:
+        if len(self.supply_deck) < 1 or (self.final_attack and self.last_supplies_taken):
             return None
         card = self.supply_deck.pop(0)
         return card
@@ -106,6 +108,7 @@ class GameState:
         if card.top == ZombieType.SURVIVOR and card.bottom not in [ZombieType.FAST, ZombieType.HORDE]:
             card.flip()
             self.city_deck = [card] + self.city_deck
+            self.active_player.print(f'{str(card.top.value).capitalize()} has appeared in city!')
             return
         elif card.bottom == ZombieType.FAST:
             card.flip()
@@ -115,7 +118,7 @@ class GameState:
             self.city_graveyard.append(card)
             return
 
-        self.active_player.print(f'{str(card.top.value).capitalize()} has entered {self.active_player.name} shelter!')
+        self.active_player.print(f'{str(card.top.value).capitalize()} has entered "{self.active_player.name}" shelter!')
         self.active_player.zombies.append(card)
 
     def event_horde(self, second=False):
@@ -147,6 +150,8 @@ class GameState:
             if card is None:
                 break
             self.active_player.supplies.append(card)
+        if self.final_attack:
+            self.last_supplies_taken = True
 
     def activate_obstacle(self, obstacle):
         activate_obstacle[obstacle](self)
@@ -179,7 +184,7 @@ class GameState:
 
     def move_aftermath(self, index, loud_defence):
         if len(self.active_player.survivors) == 0:
-            self.active_player.print('No more living survivors inside shelter...')
+            self.active_player.print(f'No more living survivors inside "{self.active_player.name}" shelter...')
             self.active_player.defeated = True
             index -= 1
         else:
@@ -187,7 +192,7 @@ class GameState:
             if loud_defence:
                 self.active_player.print('Loud noises in your shelter could be heard from miles away...')
                 self.zombie_show_up()
-            self.active_player.print('Your turn has ended.')
+            self.active_player.print(f'{self.active_player.name} turn has ended.')
         self.clean_up_table()
         return index
 
@@ -212,12 +217,14 @@ class GameState:
 
     def play_round(self):
         shelter = self.active_player
+        shelter.print(f'{shelter.name} will play round now...')
         for zombie in shelter.zombies:
             zombie.active = True
 
         turn_end = False
         discarded = False
         while len(shelter.supplies) > 0 and not turn_end:
+            shelter.gui(self)
             self.clean_up_table()
             if discarded:
                 turn_end = self.discard_supplies_move(turn_end)
@@ -249,7 +256,6 @@ class GameState:
 
     def ask_player_what_move(self):
         shelter = self.active_player
-        shelter.gui(self)
         possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'What do you want to do?\n'
         for index, supply in enumerate(shelter.supplies):
@@ -282,6 +288,7 @@ class GameState:
         elif action == possible_actions[-1] and len(shelter.supplies) == 3:
             for _ in range(len(shelter.supplies)):
                 self.supply_graveyard.append(shelter.supplies.pop())
+            shelter.print(f'{shelter.name} discards all supplies.')
             turn_end = True
         else:
             turn_end = True
