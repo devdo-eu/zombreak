@@ -53,15 +53,15 @@ def get_action(game_state, message, possible_actions):
 
 def find_rivals_and_build_action_message(game_state):
     shelter = game_state.active_player
-    rivals = []
+    rivals, possible_actions = [], []
     choice_message = ''
-    possible_actions = []
     for rival in game_state.players_still_in_game:
         if rival != shelter and not rival.defeated:
             rivals.append(rival)
     for index, rival in enumerate(rivals):
-        choice_message += f'[{index}]: {rival.name} shelter\n'
+        choice_message += f'[{index}]: "{rival.name}" shelter\n'
         possible_actions.append(str(index))
+    choice_message += '>'
     return choice_message, possible_actions, rivals
 
 

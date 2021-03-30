@@ -35,7 +35,7 @@ class CPUPlayerShelter(PlayerShelter):
         if self.city_amount > 0:
             return self.game_state.city_deck[0].top is not ZombieType.SURVIVOR
         else:
-            return None
+            return True
 
     @property
     def supplies_types(self):
@@ -73,7 +73,6 @@ class CPUPlayerShelter(PlayerShelter):
                 self.defend_with_mine_field()
             else:
                 self.defend_with_alarm()
-            # self.print(self.planned_moves[0])
             return self.planned_moves[0]
         else:
             self.move_counter += 1
@@ -81,11 +80,9 @@ class CPUPlayerShelter(PlayerShelter):
                 move = self.planned_moves[self.move_counter]
             else:
                 move = str(self.supply_amount)
-            # self.print(message + move)
             return move
 
     def cpu_ui(self, game_state):
-        # self.gui_default(game_state)
         self.game_state = game_state
         self.move_counter = -1
         self.planned_moves = []
@@ -94,7 +91,8 @@ class CPUPlayerShelter(PlayerShelter):
             self.planned_moves = [str(self.supplies.index(Supply.TAKEOVER)), choice(rivals_idx)]
         elif self.summons_amount > 0 and not self.zombie_in_city:
             self.play_summons()
-        elif self.summons_amount > 0 and self.zombie_in_city and self.zombie_amount == 0:
+        elif self.summons_amount > 0 and (self.zombie_in_city and not self.game_state.final_attack)\
+                and self.zombie_amount == 0:
             self.change_city_state()
         elif self.defences_amount > 0 and (self.obstacle_amount < 3 or self.zombie_amount > 2):
             self.play_defences()
@@ -102,7 +100,7 @@ class CPUPlayerShelter(PlayerShelter):
             self.defend_policy()
         elif not self.zombie_in_city:
             self.change_city_state()
-        elif self.zombie_in_city:
+        elif self.zombie_in_city and not self.game_state.final_attack:
             self.play_aggressively()
 
     def play_aggressively(self):
@@ -142,7 +140,7 @@ class CPUPlayerShelter(PlayerShelter):
             self.use_chainsaw()
 
     def play_summons(self):
-        if Supply.RADIO in self.supplies:
+        if Supply.RADIO in self.supplies and not self.zombie_in_city:
             self.planned_moves = [str(self.supplies.index(Supply.RADIO))]
         elif Supply.FLARE_GUN in self.supplies:
             self.planned_moves = [str(self.supplies.index(Supply.FLARE_GUN))]

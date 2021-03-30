@@ -197,10 +197,13 @@ class GameState:
         return index
 
     def zombies_eats_survivors(self):
-        for zombie in self.active_player.zombies:
-            if len(self.active_player.survivors) > 0 and zombie.active:
-                self.active_player.print(f'{str(zombie.top.value).capitalize()} killed survivor!')
-                card = self.active_player.survivors.pop()
+        shelter = self.active_player
+        for zombie in shelter.zombies:
+            if len(shelter.survivors) > 0 and zombie.active:
+                zombie_cap = str(zombie.top.value).capitalize()
+                shelter.print(f'{zombie_cap} killed survivor! '
+                              f'{len(shelter.survivors)} left inside "{shelter.name}" shelter')
+                card = shelter.survivors.pop()
                 self.city_graveyard.append(card)
 
     def defend_with_obstacles(self):
@@ -208,7 +211,7 @@ class GameState:
         obstacles = copy(self.active_player.obstacles)
         for obstacle in obstacles:
             if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
-                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?', ['y', 'n'])
+                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?\n>', ['y', 'n'])
                 if action == 'y':
                     self.activate_obstacle(obstacle)
                     if common_logic.loud_obstacle(obstacle):
@@ -217,6 +220,8 @@ class GameState:
 
     def play_round(self):
         shelter = self.active_player
+        shelter.card_used_or_discarded = False
+        opening_supplies = len(shelter.supplies)
         shelter.print(f'{shelter.name} will play round now...')
         for zombie in shelter.zombies:
             zombie.active = True
@@ -236,11 +241,14 @@ class GameState:
                 play_supplies[shelter.supplies[int(action)]](self)
                 if loud:
                     self.zombie_show_up()
-            elif action == possible_actions[-1] and len(shelter.supplies) == 3:
+            elif action == possible_actions[-1] and not shelter.card_used_or_discarded:
                 discarded = True
                 turn_end = self.discard_supplies_move(turn_end)
             else:
                 turn_end = True
+
+            if opening_supplies > len(shelter.supplies):
+                shelter.card_used_or_discarded = True
 
             if len(shelter.survivors) == 0 or len(self.players_still_in_game) < 2:
                 turn_end = True
@@ -265,7 +273,7 @@ class GameState:
             elif common_logic.loud_obstacle(supply):
                 loud = '(loud after use in defence phase)'
             question += f'[{index}] Use {supply.value} {loud}\n'
-        if len(shelter.supplies) > 2:
+        if not shelter.card_used_or_discarded:
             question += f'[{len(shelter.supplies)}] Discard some supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
@@ -278,7 +286,7 @@ class GameState:
         question = 'Which supply you want to discard?\n'
         for index, supply in enumerate(shelter.supplies):
             question += f'[{index}] Discard {supply.value}\n'
-        if len(shelter.supplies) > 2:
+        if not shelter.card_used_or_discarded:
             question += f'[{len(shelter.supplies)}] Discard all supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'

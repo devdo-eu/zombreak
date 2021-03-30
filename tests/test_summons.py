@@ -29,10 +29,10 @@ def test_play_radio(gs):
     shelter.supplies = [Supply.RADIO]
     summons.play_radio(gs)
     assert len(shelter.survivors) == 0
-    assert len(shelter.supplies) == 0
+    assert len(shelter.supplies) == 1
     assert len(gs.city_deck) == 0
-    assert len(gs.supply_graveyard) == 2
-    assert len(tests.common.outputs) == 3
+    assert len(gs.supply_graveyard) == 1
+    assert len(tests.common.outputs) == 2
 
 
 def test_play_megaphone(gs):

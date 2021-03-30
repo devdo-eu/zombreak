@@ -51,7 +51,7 @@ def defend_with_mine_field(game_state):
         put_zombie_on_graveyard(game_state, zombie)
 
     message = 'What survivors should do [0/1]?\n[0]: lure big zombie on mine field\n' \
-              '[1]: lure lesser zombie on mine field\n>>'
+              '[1]: lure lesser zombie on mine field\n>'
     for count in range(2):
         count_zombies_and_execute_function(game_state, message, use_mine_field, (3 - count))
     put_supplies_on_graveyard(game_state, Supply.MINE_FILED, obstacle=True)

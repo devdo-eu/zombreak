@@ -9,6 +9,7 @@ class PlayerShelter:
         self.obstacles = []
         self.zombies = []
         self.defeated = False
+        self.card_used_or_discarded = False
         self.input = input_foo
         self.print = print_foo
         self.gui = self.gui_default
