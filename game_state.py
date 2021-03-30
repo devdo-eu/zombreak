@@ -217,11 +217,8 @@ class GameState:
 
         turn_end = False
         discarded = False
-        while len(shelter.supplies) > 0 and not turn_end and not self.finished:
+        while len(shelter.supplies) > 0 and not turn_end:
             self.clean_up_table()
-            if len(self.players_still_in_game) < 2:
-                self.finished = True
-                continue
             if discarded:
                 turn_end = self.discard_supplies_move(turn_end)
                 continue
@@ -236,6 +233,9 @@ class GameState:
                 discarded = True
                 turn_end = self.discard_supplies_move(turn_end)
             else:
+                turn_end = True
+
+            if len(shelter.survivors) == 0 or len(self.players_still_in_game) < 2:
                 turn_end = True
         self.end_active_player_turn()
 

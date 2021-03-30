@@ -15,12 +15,15 @@ class CPUPlayerShelter(PlayerShelter):
         self.planned_moves = []
         self.game_state = None
 
+    def assign_new_printer(self, print_foo):
+        self.print = self.emergency_decorator(print_foo)
+
     def emergency_decorator(self, print_foo):
         def foo(message):
             if 'No such action as' in message:
                 self.move_counter = -1
                 self.planned_moves = ['0']
-            # print_foo(message)
+            print_foo(message)
         return foo
 
     @property
@@ -100,8 +103,6 @@ class CPUPlayerShelter(PlayerShelter):
         self.planned_moves = []
         if Supply.TAKEOVER in self.supplies:
             rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
-            if len(rivals_idx) == 0:
-                return
             self.planned_moves = [str(self.supplies.index(Supply.TAKEOVER)), choice(rivals_idx)]
         elif self.summons_amount > 0 and not self.zombie_in_city:
             self.play_summons()
@@ -229,8 +230,6 @@ class CPUPlayerShelter(PlayerShelter):
 
     def use_drone(self):
         rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
-        if len(rivals_idx) == 0:
-            return
         big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
         if lesser_count > 0 and big_zombie:
             self.planned_moves = \
@@ -247,10 +246,7 @@ class CPUPlayerShelter(PlayerShelter):
         if len(shelters_dict) > 0:
             index = shelters_dict[max(shelters_dict)]
             if len(self.game_state.players[index].obstacles) >= self.obstacle_amount:
-                if index >= len(self.game_state.players_still_in_game) - 1:
-                    self.planned_moves = [str(self.supplies.index(Supply.SWAP)), '0']
-                else:
-                    self.planned_moves = [str(self.supplies.index(Supply.SWAP)), str(index)]
+                self.planned_moves = [str(self.supplies.index(Supply.SWAP)), str(index)]
 
     def use_shotgun(self):
         big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
