@@ -10,21 +10,9 @@ class CPUPlayerShelter(PlayerShelter):
     def __init__(self, name='', print_foo=print):
         PlayerShelter.__init__(self, name, self.cpu_input, print_foo)
         self.gui = self.cpu_ui
-        self.print = self.emergency_decorator(self.print)
         self.move_counter = -1
         self.planned_moves = []
         self.game_state = None
-
-    def assign_new_printer(self, print_foo):
-        self.print = self.emergency_decorator(print_foo)
-
-    def emergency_decorator(self, print_foo):
-        def foo(message):
-            if 'No such action as' in message:
-                self.move_counter = -1
-                self.planned_moves = ['0']
-            print_foo(message)
-        return foo
 
     @property
     def zombie_amount(self):
@@ -145,8 +133,13 @@ class CPUPlayerShelter(PlayerShelter):
             tmp.append(Supply.FLARE_GUN)
         tmp_loud = [common_logic.is_loud(supply) for supply in tmp]
         obj = tmp[tmp_loud.index(True)]
-        index = self.supplies.index(obj)
-        self.planned_moves = [str(index)]
+        if obj not in [Supply.SWAP, Supply.CHAINSAW]:
+            index = self.supplies.index(obj)
+            self.planned_moves = [str(index)]
+        elif obj == Supply.SWAP:
+            self.use_swap()
+        else:
+            self.use_chainsaw()
 
     def play_summons(self):
         if Supply.RADIO in self.supplies:
@@ -189,9 +182,9 @@ class CPUPlayerShelter(PlayerShelter):
 
     def defend_with_mine_field(self):
         if self.obstacles.count(Supply.ALARM) == 0 and self.zombie_amount > self.obstacles.count(Supply.BARRICADES):
-            self.planned_moves = ['y']
+            self.planned_moves = ['y', '0', '0']
         elif self.zombie_amount / 2 <= self.obstacles.count(Supply.MINE_FILED):
-            self.planned_moves = ['y']
+            self.planned_moves = ['y', '0', '0']
         else:
             self.planned_moves = ['n']
 

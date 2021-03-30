@@ -548,10 +548,10 @@ def test_play_game(zombie):
 
 
 def test_play_game_cpu():
-    for index in range(500):
+    for index in range(250):
         print(f'Test# {index}')
         gs = GameState()
         gs.setup_game(['CPU1', 'CPU2', 'CPU3'], 2)
         for player in gs.players:
-            player.assign_new_printer(dumper_factory())
+            player.print = dumper_factory()
         gs.play_game()
