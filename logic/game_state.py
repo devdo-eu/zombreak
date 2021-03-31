@@ -316,6 +316,10 @@ class GameState:
     def play_game(self):
         while not self.finished:
             self.play_round()
+        winners = self.get_winners()
+        return winners
+
+    def get_winners(self):
         winners = []
         survivors_amount = []
         for shelter in self.players:

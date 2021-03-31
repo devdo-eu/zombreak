@@ -558,6 +558,29 @@ def test_setup_game():
         assert len(shelter.supplies) == 3
 
 
+def test_get_winners():
+    gs = GameState()
+    gs.players = [PlayerShelter('0'), PlayerShelter('1'), PlayerShelter('2')]
+    gs.players[0].survivors = [CityCard(), CityCard(), CityCard()]
+    gs.players[1].survivors = [CityCard()]
+    gs.players[2].survivors = [CityCard(), CityCard(), CityCard()]
+    winners = gs.get_winners()
+    assert len(winners) == 2
+    assert winners == ['0', '2']
+
+    gs.players[2].survivors = [CityCard(), CityCard(), CityCard(), CityCard()]
+    winners = gs.get_winners()
+    assert len(winners) == 1
+    assert winners == ['2']
+
+    gs.players[0].survivors = []
+    gs.players[1].survivors = []
+    gs.players[2].survivors = []
+    winners = gs.get_winners()
+    assert len(winners) == 0
+    assert winners == []
+
+
 def test_play_game(zombie):
     gs = GameState()
     gs.setup_game(['First', 'Second'], 1)
