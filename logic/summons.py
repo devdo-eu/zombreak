@@ -1,6 +1,6 @@
-from common_logic import is_loud, put_supplies_on_graveyard
-from zombie_enums import ZombieType
-from supply_enums import Supply
+from logic.common import is_loud, put_supplies_on_graveyard
+from enums.zombie import ZombieType
+from enums.supply import Supply
 
 
 def play_summon(game_state, summon):

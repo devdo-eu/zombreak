@@ -1,5 +1,5 @@
-from zombie_enums import ZombieType
-from supply_enums import Supply, SupplyType
+from enums.zombie import ZombieType
+from enums.supply import Supply, SupplyType
 
 
 def is_loud(supply):

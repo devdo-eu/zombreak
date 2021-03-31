@@ -1,8 +1,8 @@
-from game_state import GameState
-from city_card import CityCard
-from player_shelter import PlayerShelter
-from zombie_enums import ZombieType
-from supply_enums import Supply
+from logic.game_state import GameState
+from logic.city_card import CityCard
+from player.player_shelter import PlayerShelter
+from enums.zombie import ZombieType
+from enums.supply import Supply
 from tests.common import fast_zombie, zombie, big_zombie, helper_factory, dumper_factory
 import tests.common
 import pytest

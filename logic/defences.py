@@ -1,5 +1,5 @@
-from supply_enums import Supply
-from common_logic import put_zombie_on_graveyard, put_supplies_on_graveyard, count_zombies_and_execute_function
+from enums.supply import Supply
+from logic.common import put_zombie_on_graveyard, put_supplies_on_graveyard, count_zombies_and_execute_function
 
 
 def play_obstacle(game_state, obstacle):

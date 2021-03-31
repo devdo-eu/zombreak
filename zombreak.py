@@ -1,4 +1,4 @@
-import game_state
+from logic import game_state
 
 
 def main(print_foo=print, input_foo=input):

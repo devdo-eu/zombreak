@@ -1,6 +1,6 @@
-from cpu_player_shelter import CPUPlayerShelter
-from game_state import GameState
-from supply_enums import Supply
+from player.cpu_player_shelter import CPUPlayerShelter
+from logic.game_state import GameState
+from enums.supply import Supply
 import pytest
 from tests.common import fast_zombie, zombie, big_zombie
 

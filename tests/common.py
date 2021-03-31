@@ -1,8 +1,8 @@
 import pytest
-from game_state import GameState
-from zombie_enums import ZombieType
-from city_card import CityCard
-from player_shelter import PlayerShelter
+from logic.game_state import GameState
+from enums.zombie import ZombieType
+from logic.city_card import CityCard
+from player.player_shelter import PlayerShelter
 
 
 outputs = []

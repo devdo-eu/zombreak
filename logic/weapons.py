@@ -1,6 +1,6 @@
-from zombie_enums import ZombieType
-from supply_enums import Supply
-from common_logic import put_zombie_on_graveyard, put_supplies_on_graveyard, is_loud, count_zombies, get_action
+from enums.zombie import ZombieType
+from enums.supply import Supply
+from logic.common import put_zombie_on_graveyard, put_supplies_on_graveyard, is_loud, count_zombies, get_action
 
 
 def play_weapon(game_state, weapon, strong=False, destroyed=True):

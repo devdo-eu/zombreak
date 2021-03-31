@@ -1,9 +1,9 @@
-from player_shelter import PlayerShelter
-from game_state import GameState
-from city_card import CityCard
+from player.player_shelter import PlayerShelter
+from logic.game_state import GameState
+from logic.city_card import CityCard
 from tests.common import zombie, fast_zombie, big_zombie, dumper_factory
 import tests.common
-from supply_enums import Supply
+from enums.supply import Supply
 
 
 def test_sanity_check():
