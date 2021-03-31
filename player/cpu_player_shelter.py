@@ -1,7 +1,7 @@
-from zombie_enums import ZombieType
-from supply_enums import Supply, SupplyType
-from player_shelter import PlayerShelter
-import common_logic
+from enums.zombie import ZombieType
+from enums.supply import Supply, SupplyType
+from player.player_shelter import PlayerShelter
+from logic import common
 from copy import copy
 from secrets import choice
 
@@ -39,7 +39,7 @@ class CPUPlayerShelter(PlayerShelter):
 
     @property
     def supplies_types(self):
-        return [common_logic.check_type(supply) for supply in self.supplies]
+        return [common.check_type(supply) for supply in self.supplies]
 
     @property
     def weapons_amount(self):
@@ -63,7 +63,7 @@ class CPUPlayerShelter(PlayerShelter):
 
     @property
     def supplies_loud(self):
-        return [common_logic.is_loud(supply) for supply in self.supplies]
+        return [common.is_loud(supply) for supply in self.supplies]
 
     def cpu_input(self, message):
         if '[y/n]?' in message and 'Do you want to use' in message:
@@ -129,7 +129,7 @@ class CPUPlayerShelter(PlayerShelter):
         if Supply.FLARE_GUN in self.supplies:
             tmp.pop(tmp.index(Supply.FLARE_GUN))
             tmp.append(Supply.FLARE_GUN)
-        tmp_loud = [common_logic.is_loud(supply) for supply in tmp]
+        tmp_loud = [common.is_loud(supply) for supply in tmp]
         obj = tmp[tmp_loud.index(True)]
         if obj not in [Supply.SWAP, Supply.CHAINSAW]:
             index = self.supplies.index(obj)
@@ -158,7 +158,7 @@ class CPUPlayerShelter(PlayerShelter):
             self.defend_with_counter()
 
     def defend_with_weapon(self):
-        big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+        big_zombie, lesser_count = common.count_zombies(self.game_state)
         if Supply.AXE in self.supplies and lesser_count > 0:
             self.planned_moves = [str(self.supplies.index(Supply.AXE))]
         elif Supply.GUN in self.supplies and lesser_count > 0:
@@ -207,7 +207,7 @@ class CPUPlayerShelter(PlayerShelter):
 
     def use_lure_out(self):
         rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
-        big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+        big_zombie, lesser_count = common.count_zombies(self.game_state)
         self.planned_moves = [str(self.supplies.index(Supply.LURE_OUT))]
         if self.zombie_in_city:
             self.planned_moves.append('y')
@@ -221,7 +221,7 @@ class CPUPlayerShelter(PlayerShelter):
 
     def use_drone(self):
         rivals_idx = [str(index) for index in range(len(self.game_state.players_still_in_game) - 1)]
-        big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+        big_zombie, lesser_count = common.count_zombies(self.game_state)
         if lesser_count > 0 and big_zombie:
             self.planned_moves = \
                 [str(self.supplies.index(Supply.DRONE)), choice(['0', '1']), choice(rivals_idx)]
@@ -230,7 +230,7 @@ class CPUPlayerShelter(PlayerShelter):
 
     def use_swap(self):
         shelters_dict = {}
-        _, _, rivals = common_logic.find_rivals_and_build_action_message(self.game_state)
+        _, _, rivals = common.find_rivals_and_build_action_message(self.game_state)
         for index, shelter in enumerate(rivals):
             if shelter.name != self.name and len(shelter.zombies) == 0:
                 shelters_dict[len(shelter.obstacles)] = index
@@ -240,7 +240,7 @@ class CPUPlayerShelter(PlayerShelter):
                 self.planned_moves = [str(self.supplies.index(Supply.SWAP)), str(index)]
 
     def use_shotgun(self):
-        big_zombie, lesser_count = common_logic.count_zombies(self.game_state)
+        big_zombie, lesser_count = common.count_zombies(self.game_state)
         self.planned_moves = [str(self.supplies.index(Supply.SHOTGUN))]
         if lesser_count > 1:
             self.planned_moves.append('1')

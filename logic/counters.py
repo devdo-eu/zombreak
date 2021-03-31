@@ -1,7 +1,7 @@
-from zombie_enums import ZombieType
-from supply_enums import Supply
-from common_logic import find_rivals_and_build_action_message, put_supplies_on_graveyard, get_action
-from common_logic import count_zombies_and_execute_function
+from enums.zombie import ZombieType
+from enums.supply import Supply
+from logic.common import find_rivals_and_build_action_message, put_supplies_on_graveyard, get_action
+from logic.common import count_zombies_and_execute_function
 
 
 def play_sacrifice(game_state):

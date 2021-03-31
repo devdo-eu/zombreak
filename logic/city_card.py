@@ -1,4 +1,4 @@
-from zombie_enums import ZombieType
+from enums.zombie import ZombieType
 
 
 class CityCard:

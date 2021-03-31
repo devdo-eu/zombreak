@@ -1,16 +1,11 @@
 from random import shuffle
-from zombie_enums import ZombieType
-from supply_enums import Supply
-from city_card import CityCard
-from player_shelter import PlayerShelter
-from cpu_player_shelter import CPUPlayerShelter
+from enums.zombie import ZombieType
+from enums.supply import Supply
+from logic.city_card import CityCard
+from player.player_shelter import PlayerShelter
+from player.cpu_player_shelter import CPUPlayerShelter
 from copy import copy
-import common_logic
-import defences
-import summons
-import counters
-import weapons
-
+from logic import common, counters, defences, summons, weapons
 
 play_supplies = {
     Supply.ALARM: defences.play_alarm,
@@ -211,10 +206,10 @@ class GameState:
         obstacles = copy(self.active_player.obstacles)
         for obstacle in obstacles:
             if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
-                action = common_logic.get_action(self, f'Do you want to use {obstacle.value}[y/n]?\n>', ['y', 'n'])
+                action = common.get_action(self, f'Do you want to use {obstacle.value}[y/n]?\n>', ['y', 'n'])
                 if action == 'y':
                     self.activate_obstacle(obstacle)
-                    if common_logic.loud_obstacle(obstacle):
+                    if common.loud_obstacle(obstacle):
                         loud_defence = True
         return loud_defence
 
@@ -237,7 +232,7 @@ class GameState:
 
             action, possible_actions = self.ask_player_what_move()
             if action in possible_actions[:-1]:
-                loud = common_logic.is_loud(shelter.supplies[int(action)])
+                loud = common.is_loud(shelter.supplies[int(action)])
                 play_supplies[shelter.supplies[int(action)]](self)
                 if loud:
                     self.zombie_show_up()
@@ -268,16 +263,16 @@ class GameState:
         question = 'What do you want to do?\n'
         for index, supply in enumerate(shelter.supplies):
             loud = ''
-            if common_logic.is_loud(supply):
+            if common.is_loud(supply):
                 loud = '(loud instantly)'
-            elif common_logic.loud_obstacle(supply):
+            elif common.loud_obstacle(supply):
                 loud = '(loud after use in defence phase)'
             question += f'[{index}] Use {supply.value} {loud}\n'
         if not shelter.card_used_or_discarded:
             question += f'[{len(shelter.supplies)}] Discard some supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
-        action = common_logic.get_action(self, question + '> ', possible_actions)
+        action = common.get_action(self, question + '> ', possible_actions)
         return action, possible_actions
 
     def discard_supplies_move(self, turn_end):
@@ -290,7 +285,7 @@ class GameState:
             question += f'[{len(shelter.supplies)}] Discard all supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
-        action = common_logic.get_action(self, question + '> ', possible_actions)
+        action = common.get_action(self, question + '> ', possible_actions)
         if action in possible_actions[:-1]:
             self.supply_graveyard.append(shelter.supplies.pop(int(action)))
         elif action == possible_actions[-1] and len(shelter.supplies) == 3:

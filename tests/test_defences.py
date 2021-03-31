@@ -1,7 +1,7 @@
-from city_card import CityCard
-from player_shelter import PlayerShelter
-from supply_enums import Supply
-import defences
+from logic.city_card import CityCard
+from player.player_shelter import PlayerShelter
+from enums.supply import Supply
+from logic import defences
 import pytest
 from tests.common import dumper_factory, helper_factory, gs, fast_zombie, zombie, big_zombie
 import tests.common
