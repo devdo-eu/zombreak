@@ -21,9 +21,10 @@ def shelter(gs, fast_zombie, zombie, big_zombie):
     return shelter
 
 
-def test_play_alarm(gs, shelter):
+@pytest.mark.asyncio
+async def test_play_alarm(gs, shelter):
     shelter.supplies = [Supply.ALARM]
-    defences.play_alarm(gs)
+    await defences.play_alarm(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -32,10 +33,11 @@ def test_play_alarm(gs, shelter):
         assert hungry_zombie.active
 
 
-def test_defend_with_alarm(gs, shelter):
+@pytest.mark.asyncio
+async def test_defend_with_alarm(gs, shelter):
     shelter.survivors = [CityCard()]
     shelter.obstacles = [Supply.ALARM]
-    defences.defend_with_alarm(gs)
+    await defences.defend_with_alarm(gs)
     assert len(tests.common.outputs) == 4
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 0
@@ -44,9 +46,10 @@ def test_defend_with_alarm(gs, shelter):
         assert not hungry_zombie.active
 
 
-def test_play_barricades(gs, shelter):
+@pytest.mark.asyncio
+async def test_play_barricades(gs, shelter):
     shelter.supplies = [Supply.BARRICADES]
-    defences.play_barricades(gs)
+    await defences.play_barricades(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -55,10 +58,11 @@ def test_play_barricades(gs, shelter):
         assert hungry_zombie.active
 
 
-def test_defend_with_barricades(gs, shelter):
+@pytest.mark.asyncio
+async def test_defend_with_barricades(gs, shelter):
     shelter.survivors = [CityCard()]
     shelter.obstacles = [Supply.BARRICADES]
-    defences.defend_with_barricades(gs)
+    await defences.defend_with_barricades(gs)
     assert len(tests.common.outputs) == 3
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 0
@@ -70,9 +74,10 @@ def test_defend_with_barricades(gs, shelter):
     assert number_of_stopped_zombies == 1
 
 
-def test_play_mine_field(gs, shelter):
+@pytest.mark.asyncio
+async def test_play_mine_field(gs, shelter):
     shelter.supplies = [Supply.MINE_FILED]
-    defences.play_mine_field(gs)
+    await defences.play_mine_field(gs)
     assert len(tests.common.outputs) == 1
     assert len(shelter.supplies) == 0
     assert len(shelter.obstacles) == 1
@@ -81,11 +86,12 @@ def test_play_mine_field(gs, shelter):
         assert hungry_zombie.active
 
 
-def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
+@pytest.mark.asyncio
+async def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences.defend_with_mine_field(gs)
+    await defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 0
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 1
@@ -96,7 +102,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences.defend_with_mine_field(gs)
+    await defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert fast_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0
@@ -109,7 +115,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences.defend_with_mine_field(gs)
+    await defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert big_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0
@@ -122,7 +128,7 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [zombie, big_zombie, fast_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences.defend_with_mine_field(gs)
+    await defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 1
     assert fast_zombie in shelter.zombies
     assert len(shelter.obstacles) == 0
@@ -131,11 +137,12 @@ def test_defend_with_mine_field(gs, fast_zombie, zombie, big_zombie):
     assert len(tests.common.outputs) == 5
 
 
-def test_defend_with_mine_field_one_zombie(gs, big_zombie):
+@pytest.mark.asyncio
+async def test_defend_with_mine_field_one_zombie(gs, big_zombie):
     shelter = gs.active_player
     shelter.zombies = [big_zombie]
     shelter.obstacles = [Supply.MINE_FILED]
-    defences.defend_with_mine_field(gs)
+    await defences.defend_with_mine_field(gs)
     assert len(shelter.zombies) == 0
     assert len(shelter.obstacles) == 0
     assert len(gs.supply_graveyard) == 1

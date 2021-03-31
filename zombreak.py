@@ -1,7 +1,8 @@
 from logic import game_state
+import asyncio
 
 
-def main(print_foo=print, input_foo=input):
+async def main(print_foo=print, input_foo=input):
     print_foo('Welcome to Zombreak game!')
     how_many = int(input_foo('How many players will play? (2-6): '))
     if how_many < 2 or how_many > 6:
@@ -14,7 +15,7 @@ def main(print_foo=print, input_foo=input):
         names.append(input_foo(f'Enter name for player #{index}: '))
     game = game_state.GameState()
     game.setup_game(names, initial_survivors)
-    winners = game.play_game()
+    winners = await game.play_game()
     if len(winners) > 0:
         print_foo(f'Game won by: {winners}')
     else:
@@ -22,4 +23,4 @@ def main(print_foo=print, input_foo=input):
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

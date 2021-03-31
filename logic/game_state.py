@@ -148,17 +148,17 @@ class GameState:
         if self.final_attack:
             self.last_supplies_taken = True
 
-    def activate_obstacle(self, obstacle):
-        activate_obstacle[obstacle](self)
+    async def activate_obstacle(self, obstacle):
+        await activate_obstacle[obstacle](self)
 
     def clean_up_shelter(self, shelter):
         self.supply_graveyard += shelter.supplies + shelter.obstacles
         self.city_graveyard += shelter.zombies + shelter.survivors
         shelter.supplies, shelter.obstacles, shelter.zombies, shelter.survivors = [], [], [], []
 
-    def end_active_player_turn(self):
+    async def end_active_player_turn(self):
         index = self.players_still_in_game.index(self.active_player)
-        loud_defence = self.defend_with_obstacles()
+        loud_defence = await self.defend_with_obstacles()
         self.zombies_eats_survivors()
         index = self.move_aftermath(index, loud_defence)
         self.check_if_game_continues()
@@ -201,19 +201,19 @@ class GameState:
                 card = shelter.survivors.pop()
                 self.city_graveyard.append(card)
 
-    def defend_with_obstacles(self):
+    async def defend_with_obstacles(self):
         loud_defence = False
         obstacles = copy(self.active_player.obstacles)
         for obstacle in obstacles:
             if len(self.active_player.zombies) != 0 and self.active_player_active_zombies:
-                action = common.get_action(self, f'Do you want to use {obstacle.value}[y/n]?\n>', ['y', 'n'])
+                action = await common.get_action(self, f'Do you want to use {obstacle.value}[y/n]?\n>', ['y', 'n'])
                 if action == 'y':
-                    self.activate_obstacle(obstacle)
+                    await self.activate_obstacle(obstacle)
                     if common.loud_obstacle(obstacle):
                         loud_defence = True
         return loud_defence
 
-    def play_round(self):
+    async def play_round(self):
         shelter = self.active_player
         shelter.card_used_or_discarded = False
         opening_supplies = len(shelter.supplies)
@@ -227,18 +227,18 @@ class GameState:
             shelter.gui(self)
             self.clean_up_table()
             if discarded:
-                turn_end = self.discard_supplies_move(turn_end)
+                turn_end = await self.discard_supplies_move(turn_end)
                 continue
 
-            action, possible_actions = self.ask_player_what_move()
+            action, possible_actions = await self.ask_player_what_move()
             if action in possible_actions[:-1]:
                 loud = common.is_loud(shelter.supplies[int(action)])
-                play_supplies[shelter.supplies[int(action)]](self)
+                await play_supplies[shelter.supplies[int(action)]](self)
                 if loud:
                     self.zombie_show_up()
             elif action == possible_actions[-1] and not shelter.card_used_or_discarded:
                 discarded = True
-                turn_end = self.discard_supplies_move(turn_end)
+                turn_end = await self.discard_supplies_move(turn_end)
             else:
                 turn_end = True
 
@@ -247,7 +247,7 @@ class GameState:
 
             if len(shelter.survivors) == 0 or len(self.players_still_in_game) < 2:
                 turn_end = True
-        self.end_active_player_turn()
+        await self.end_active_player_turn()
 
     def clean_up_table(self):
         for player in self.players:
@@ -257,7 +257,7 @@ class GameState:
             if player.defeated and not_clean:
                 self.clean_up_shelter(player)
 
-    def ask_player_what_move(self):
+    async def ask_player_what_move(self):
         shelter = self.active_player
         possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'What do you want to do?\n'
@@ -272,10 +272,10 @@ class GameState:
             question += f'[{len(shelter.supplies)}] Discard some supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
-        action = common.get_action(self, question + '> ', possible_actions)
+        action = await common.get_action(self, question + '> ', possible_actions)
         return action, possible_actions
 
-    def discard_supplies_move(self, turn_end):
+    async def discard_supplies_move(self, turn_end):
         shelter = self.active_player
         possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'Which supply you want to discard?\n'
@@ -285,7 +285,7 @@ class GameState:
             question += f'[{len(shelter.supplies)}] Discard all supplies\n'
         else:
             question += f'[{len(shelter.supplies)}] End my turn\n'
-        action = common.get_action(self, question + '> ', possible_actions)
+        action = await common.get_action(self, question + '> ', possible_actions)
         if action in possible_actions[:-1]:
             self.supply_graveyard.append(shelter.supplies.pop(int(action)))
         elif action == possible_actions[-1] and len(shelter.supplies) == 3:
@@ -313,9 +313,9 @@ class GameState:
             self.players.append(shelter)
         self.active_player = self.players[0]
 
-    def play_game(self):
+    async def play_game(self):
         while not self.finished:
-            self.play_round()
+            await self.play_round()
         winners = self.get_winners()
         return winners
 

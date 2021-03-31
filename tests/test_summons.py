@@ -4,6 +4,7 @@ from enums.supply import Supply
 from logic import summons
 from tests.common import dumper_factory, gs, fast_zombie, zombie, big_zombie
 import tests.common
+import pytest
 
 
 def test_sanity_check():
@@ -13,11 +14,12 @@ def test_sanity_check():
     assert big_zombie
 
 
-def test_play_radio(gs):
+@pytest.mark.asyncio
+async def test_play_radio(gs):
     shelter = gs.active_player
     gs.city_deck = [CityCard()]
     shelter.supplies = [Supply.RADIO]
-    summons.play_radio(gs)
+    await summons.play_radio(gs)
     assert len(shelter.survivors) == 1
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0
@@ -27,7 +29,7 @@ def test_play_radio(gs):
     gs.active_player = PlayerShelter(print_foo=dumper_factory())
     shelter = gs.active_player
     shelter.supplies = [Supply.RADIO]
-    summons.play_radio(gs)
+    await summons.play_radio(gs)
     assert len(shelter.survivors) == 0
     assert len(shelter.supplies) == 1
     assert len(gs.city_deck) == 0
@@ -35,11 +37,12 @@ def test_play_radio(gs):
     assert len(tests.common.outputs) == 2
 
 
-def test_play_megaphone(gs):
+@pytest.mark.asyncio
+async def test_play_megaphone(gs):
     shelter = gs.active_player
     gs.city_deck = [CityCard()]
     shelter.supplies = [Supply.MEGAPHONE]
-    summons.play_megaphone(gs)
+    await summons.play_megaphone(gs)
     assert len(shelter.survivors) == 1
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0
@@ -50,7 +53,7 @@ def test_play_megaphone(gs):
     shelter = gs.active_player
     gs.city_deck = []
     shelter.supplies = [Supply.MEGAPHONE]
-    summons.play_megaphone(gs)
+    await summons.play_megaphone(gs)
     assert len(shelter.survivors) == 0
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0
@@ -58,11 +61,12 @@ def test_play_megaphone(gs):
     assert len(tests.common.outputs) == 4
 
 
-def test_play_flare_gun(gs):
+@pytest.mark.asyncio
+async def test_play_flare_gun(gs):
     shelter = gs.active_player
     gs.city_deck = [CityCard()]
     shelter.supplies = [Supply.FLARE_GUN]
-    summons.play_flare_gun(gs)
+    await summons.play_flare_gun(gs)
     assert len(shelter.survivors) == 1
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0
@@ -73,7 +77,7 @@ def test_play_flare_gun(gs):
     shelter = gs.active_player
     gs.city_deck = [CityCard(), CityCard()]
     shelter.supplies = [Supply.FLARE_GUN]
-    summons.play_flare_gun(gs)
+    await summons.play_flare_gun(gs)
     assert len(shelter.survivors) == 2
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0
@@ -84,7 +88,7 @@ def test_play_flare_gun(gs):
     shelter = gs.active_player
     gs.city_deck = []
     shelter.supplies = [Supply.FLARE_GUN]
-    summons.play_flare_gun(gs)
+    await summons.play_flare_gun(gs)
     assert len(shelter.survivors) == 0
     assert len(shelter.supplies) == 0
     assert len(gs.city_deck) == 0

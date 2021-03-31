@@ -14,6 +14,10 @@ class PlayerShelter:
         self.print = print_foo
         self.gui = self.gui_default
 
+    async def input_async(self, message):
+        ret = self.input(message)
+        return ret
+
     def gui_default(self, game_state):
         bar_length = 80
         info = '-' * bar_length + '\n'

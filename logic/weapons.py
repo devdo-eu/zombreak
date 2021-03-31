@@ -34,18 +34,18 @@ def kill_zombie(game_state, supply, zombie_card, destroyed):
         put_supplies_on_graveyard(game_state, supply)
 
 
-def play_axe(game_state):
+async def play_axe(game_state):
     if len(game_state.active_player.zombies) > 0:
         play_weapon(game_state, Supply.AXE)
     else:
         game_state.active_player.print(f'You cannot play {Supply.AXE.value} for nothing!')
 
 
-def play_gun(game_state):
+async def play_gun(game_state):
     play_weapon(game_state, Supply.GUN)
 
 
-def play_shotgun(game_state):
+async def play_shotgun(game_state):
     big_inside, lesser_counter = count_zombies(game_state)
     if big_inside and lesser_counter == 0:
         play_weapon(game_state, Supply.SHOTGUN, strong=True)
@@ -57,7 +57,7 @@ def play_shotgun(game_state):
     else:
         message = 'What survivors should do [0/1]?\n[0]: kill big zombie\n' \
                   f'[1]: kill up to two lesser zombies ({lesser_counter} inside)\n>'
-        action = get_action(game_state, message, ['0', '1'])
+        action = await get_action(game_state, message, ['0', '1'])
         if action == '0':
             play_weapon(game_state, Supply.SHOTGUN, strong=True)
         elif lesser_counter == 1:
@@ -67,13 +67,13 @@ def play_shotgun(game_state):
             play_weapon(game_state, Supply.SHOTGUN)
 
 
-def play_sniper_rifle(game_state):
+async def play_sniper_rifle(game_state):
     shelter = game_state.active_player
     if len(game_state.city_deck) > 0:
         top_card = game_state.city_deck[0]
         if top_card.top != ZombieType.SURVIVOR:
             message = f'There is {top_card.top.value} in the city. Should the survivors shoot it[y/n]?\n>'
-            action = get_action(game_state, message, ['y', 'n'])
+            action = await get_action(game_state, message, ['y', 'n'])
             if action == 'y':
                 shelter.print(f'One of survivors killed {top_card.top.value} with {Supply.SNIPER.value}!')
                 shelter.print('City is safe now!')
@@ -89,7 +89,7 @@ def play_sniper_rifle(game_state):
         play_weapon(game_state, Supply.SNIPER)
     else:
         message = 'What survivors should do[0/1]?\n[0]: kill big zombie\n[1]: kill lesser zombie\n>'
-        action = get_action(game_state, message, ['0', '1'])
+        action = await get_action(game_state, message, ['0', '1'])
         if action == '0':
             play_weapon(game_state, Supply.SNIPER, strong=True)
         else:

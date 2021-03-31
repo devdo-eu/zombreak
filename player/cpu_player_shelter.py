@@ -180,9 +180,9 @@ class CPUPlayerShelter(PlayerShelter):
 
     def defend_with_mine_field(self):
         if self.obstacles.count(Supply.ALARM) == 0 and self.zombie_amount > self.obstacles.count(Supply.BARRICADES):
-            self.planned_moves = ['y', '0', '0']
+            self.planned_moves = ['y', '0', '0', '0']
         elif self.zombie_amount / 2 <= self.obstacles.count(Supply.MINE_FILED):
-            self.planned_moves = ['y', '0', '0']
+            self.planned_moves = ['y', '0', '0', '0']
         else:
             self.planned_moves = ['n']
 
