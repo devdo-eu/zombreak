@@ -24,6 +24,7 @@ dependencies:
   - pyflakes=2.2.0=pyhd3eb1b0_0
   - pyparsing=2.4.7=pyhd3eb1b0_0
   - pytest=6.2.2=py39haa95532_2
+  - pytest-asyncio=0.14.0=py39haa95532_1
   - pytest-cov=2.11.1=pyhd3eb1b0_0
   - python=3.9.2=h6244533_0
   - setuptools=52.0.0=py39haa95532_0
