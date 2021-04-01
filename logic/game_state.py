@@ -317,6 +317,11 @@ class GameState:
         while not self.finished:
             await self.play_round()
         winners = self.get_winners()
+        for player in self.players:
+            if len(winners) > 0:
+                player.print(f'Game won by: {winners}')
+            else:
+                player.print('All shelters destroyed. Zombies won!')
         return winners
 
     def get_winners(self):
