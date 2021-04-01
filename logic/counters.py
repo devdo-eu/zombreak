@@ -53,7 +53,7 @@ async def play_chainsaw(game_state):
         choice_message += f'[{index}]: {rival.name} shelter\n'
         possible_actions.append(str(index))
     if len(rivals) > 0:
-        message = f'Where survivor should use {Supply.CHAINSAW.value} to destroy fortifications?\n' + choice_message
+        message = f'Where survivor should use {Supply.CHAINSAW.value} to destroy fortifications?\n>' + choice_message
         action = await get_action(game_state, message, possible_actions)
         rival = rivals[int(action)]
         shelter.print(f'Survivor successfully destroyed all defence at {rival.name} shelter!')
