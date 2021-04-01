@@ -6,7 +6,6 @@ import asyncio
 from player.player_shelter import PlayerShelter
 import logic.game_state as game
 import uuid
-import uvicorn
 
 app = FastAPI()
 games_container = []
@@ -222,7 +221,3 @@ def post_player_move(game_id: int, player_name: str, player_move: str, access_to
 
     games_container[game_id]['inputs'][player_name].append(player_move)
     return {'status': 'OK', "input": player_move}
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
