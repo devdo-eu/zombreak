@@ -24,7 +24,6 @@ def create_print(game_id: int):
     """
     global games_container
     gc = games_container[game_id]
-    active = gc['state'].active_player
 
     def print_foo(message):
         private_message = False
@@ -35,6 +34,7 @@ def create_print(game_id: int):
             for gamer in gc['outputs']:
                 gc['outputs'][gamer].append(message)
         else:
+            active = gc['state'].active_player
             gc['outputs'][active.name].append(message)
     return print_foo
 
