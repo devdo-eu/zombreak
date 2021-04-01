@@ -196,9 +196,9 @@ class GameState:
         for zombie in shelter.zombies:
             if len(shelter.survivors) > 0 and zombie.active:
                 zombie_cap = str(zombie.top.value).capitalize()
+                card = shelter.survivors.pop()
                 shelter.print(f'{zombie_cap} killed survivor! '
                               f'{len(shelter.survivors)} left inside "{shelter.name}" shelter')
-                card = shelter.survivors.pop()
                 self.city_graveyard.append(card)
 
     async def defend_with_obstacles(self):
