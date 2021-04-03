@@ -124,7 +124,7 @@ async def start_game(game_params: GameParams) -> JSONResponse:
     """
     Method used to create game instance with given parameters
     :param game_params: GameParams object with integer initial survivors and list of strings with players_names
-    :return: integer value of game_id
+    :return: Response with integer value of game_id
     """
     state = game.GameState()
     gp = game_params
@@ -152,7 +152,7 @@ def get_game_log(game_id: int) -> JSONResponse:
     """
     Method used to get list of important events of game with given game id.
     :param game_id: integer value of existing game
-    :return: list with string with all important events in game
+    :return: Response with list with string with all important events in game
     """
     if game_id >= len(games_container):
         return JSONResponse(content={'status': 'No game', 'output': None}, status_code=404)
@@ -166,7 +166,7 @@ def get_key_for_player_ui(game_id: int, player_name: str) -> JSONResponse:
     Method used to generate user private access token for view ui and send moves
     :param game_id: integer value of existing game
     :param player_name: string with name of player
-    :return: string with access token
+    :return: Response with access token as string
     """
     content, status_code = validate_game_and_player_data(game_id, player_name)
     if status_code != 200:
@@ -188,7 +188,7 @@ def get_player_ui(game_id: int, player_name: str, access_token: Optional[str]) -
     :param game_id: integer value of existing game
     :param player_name: string with name of player
     :param access_token: User private access token
-    :return: list of strings with all messages to player with given name
+    :return: Response list of strings with all messages to player with given name
     """
     content, status_code = validate_game_and_player_data(game_id, player_name)
     if status_code != 200:
@@ -210,7 +210,7 @@ def post_player_move(game_id: int, player_name: str, player_move: str, access_to
     :param player_name: string with name of player
     :param player_move: string with player's next move
     :param access_token: User private access token
-    :return: string with saved next player's move
+    :return: Response with saved next player's move
     """
     content, status_code = validate_game_and_player_data(game_id, player_name)
     if status_code != 200:
