@@ -139,7 +139,7 @@ def test_post_player_move():
         assert response.json()['status'] == 'OK'
         assert response.json()['input'] == move
 
-        sleep(0.05)
+        sleep(0.2)
         response = tc.get(f"/0/John?access_token={token}")
         assert response.status_code == 200
         assert response.json()['status'] == 'OK'
