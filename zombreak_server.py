@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
+from collections.abc import Callable, Awaitable
 import asyncio
 from player.player_shelter import PlayerShelter
 import logic.game_state as game
@@ -16,7 +17,7 @@ class GameParams(BaseModel):
     players_names: list
 
 
-def create_print(game_id: int):
+def create_print(game_id: int) -> Callable[[str], None]:
     """
     Function used to inject print function - proper for client-server solution
     :param game_id: integer value of game id
@@ -25,7 +26,7 @@ def create_print(game_id: int):
     global games_container
     gc = games_container[game_id]
 
-    def print_foo(message):
+    def print_foo(message: str) -> None:
         private_message = False
         if 'Your Shelter:' in message:
             private_message = True
@@ -39,7 +40,7 @@ def create_print(game_id: int):
     return print_foo
 
 
-def create_input(name: str, game_id: int):
+def create_input(name: str, game_id: int) -> Callable[[str], Awaitable[str]]:
     """
     Function used to inject input function - proper for client-server solution
     :param name: string with name of player
@@ -53,7 +54,7 @@ def create_input(name: str, game_id: int):
         while len(gc['inputs'][name]) <= 0:
             await asyncio.sleep(0.05)
 
-    async def input_foo(message):
+    async def input_foo(message: str) -> str:
         gc['outputs'][name].append(message)
         await waiter()
         move = gc['inputs'][name].pop()
@@ -62,7 +63,7 @@ def create_input(name: str, game_id: int):
     return input_foo
 
 
-async def create_io(game_id, game_state):
+async def create_io(game_id: int, game_state: game) -> None:
     """
     Function used to inject proper print and input functions to human players.
     :param game_id: integer value of game id
@@ -74,7 +75,7 @@ async def create_io(game_id, game_state):
             player.input_async = create_input(player.name, game_id)
 
 
-def validate_game_and_player_data(game_id: int, player_name: str):
+def validate_game_and_player_data(game_id: int, player_name: str) -> tuple[dict, int]:
     """
     Function used to ease validation of data given to post_player_move and get_player_ui.
     :param game_id: integer value of existing game
@@ -91,7 +92,7 @@ def validate_game_and_player_data(game_id: int, player_name: str):
 
 
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """
     Method used to setup starting game server.
     """
@@ -100,7 +101,7 @@ async def startup_event():
 
 
 @app.get("/")
-async def read_root():
+async def read_root() -> HTMLResponse:
     """
     Method used to show welcome page of Macau game server.
     :return: HTML content
@@ -119,7 +120,7 @@ async def read_root():
 
 
 @app.post("/")
-async def start_game(game_params: GameParams):
+async def start_game(game_params: GameParams) -> JSONResponse:
     """
     Method used to create game instance with given parameters
     :param game_params: GameParams object with integer initial survivors and list of strings with players_names
@@ -143,11 +144,11 @@ async def start_game(game_params: GameParams):
     await create_io(game_id, state)
     asyncio.create_task(state.play_game())
     content = {'status': 'OK', 'game_id': game_id}
-    return content
+    return JSONResponse(content=content, status_code=200)
 
 
 @app.get("/{game_id}")
-def get_game_log(game_id: int):
+def get_game_log(game_id: int) -> JSONResponse:
     """
     Method used to get list of important events of game with given game id.
     :param game_id: integer value of existing game
@@ -156,11 +157,11 @@ def get_game_log(game_id: int):
     if game_id >= len(games_container):
         return JSONResponse(content={'status': 'No game', 'output': None}, status_code=404)
     outputs = games_container[game_id]['outputs']['game']
-    return {"status": "OK", "output": outputs}
+    return JSONResponse(content={"status": "OK", "output": outputs}, status_code=200)
 
 
 @app.get("/{game_id}/{player_name}/key")
-def get_key_for_player_ui(game_id: int, player_name: str):
+def get_key_for_player_ui(game_id: int, player_name: str) -> JSONResponse:
     """
     Method used to generate user private access token for view ui and send moves
     :param game_id: integer value of existing game
@@ -181,7 +182,7 @@ def get_key_for_player_ui(game_id: int, player_name: str):
 
 
 @app.get("/{game_id}/{player_name}")
-def get_player_ui(game_id: int, player_name: str, access_token: Optional[str]):
+def get_player_ui(game_id: int, player_name: str, access_token: Optional[str]) -> JSONResponse:
     """
     Method used to get messages prepared for a player with the given name
     :param game_id: integer value of existing game
@@ -198,11 +199,11 @@ def get_player_ui(game_id: int, player_name: str, access_token: Optional[str]):
         return JSONResponse(content={"status": "Bad token", "output": None}, status_code=401)
 
     outputs = games_container[game_id]['outputs'][player_name]
-    return {"status": "OK", "output": outputs}
+    return JSONResponse(content={"status": "OK", "output": outputs}, status_code=200)
 
 
 @app.post("/{game_id}/{player_name}")
-def post_player_move(game_id: int, player_name: str, player_move: str, access_token: Optional[str]):
+def post_player_move(game_id: int, player_name: str, player_move: str, access_token: Optional[str]) -> JSONResponse:
     """
     Method used to send next move by player with given name to game with given game id
     :param game_id: integer value of existing game
@@ -220,4 +221,4 @@ def post_player_move(game_id: int, player_name: str, player_move: str, access_to
         return JSONResponse(content={"status": "Bad token", "input": None}, status_code=401)
 
     games_container[game_id]['inputs'][player_name].append(player_move)
-    return {'status': 'OK', "input": player_move}
+    return JSONResponse(content={'status': 'OK', "input": player_move}, status_code=200)

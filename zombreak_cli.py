@@ -1,9 +1,10 @@
 import requests
 from time import sleep
 import os
+from collections.abc import Callable
 
 
-def crash_on_error(response):
+def crash_on_error(response: requests.Response) -> None:
     """
     Function used to raise exception and end client work.
     :param response: Response object with answer from rest api game server
@@ -12,7 +13,7 @@ def crash_on_error(response):
         raise Exception(f"Something goes wrong. Server respond with: {response.status_code}")
 
 
-def main(input_foo=input, print_foo=print):
+def main(input_foo: Callable[[str], str] = input, print_foo: Callable[[str], None] = print) -> None:
     """
     Function used to control all client setup flow & logic
     :param input_foo: functor with function used to get input from user
@@ -29,7 +30,7 @@ def main(input_foo=input, print_foo=print):
         print_foo(f"Wrong option: {create_join_watch}")
 
 
-def find_server(host, input_foo, print_foo):
+def find_server(host: str, input_foo: Callable[[str], str], print_foo: Callable[[str], None]) -> str:
     """
     Function used to check connection with server.
     :param host: string with address to game server in IP:PORT format
@@ -50,7 +51,7 @@ def find_server(host, input_foo, print_foo):
     return host
 
 
-def find_game(host, input_foo, print_foo):
+def find_game(host: str, input_foo: Callable[[str], str], print_foo: Callable[[str], None]) -> tuple[int, int]:
     """
     Function used to check if game with given game id exists on game server
     :param host: string with address to game server in IP:PORT format
@@ -69,7 +70,7 @@ def find_game(host, input_foo, print_foo):
     return game_id, status_code
 
 
-def watch_game(host, input_foo, print_foo):
+def watch_game(host: str, input_foo: Callable[[str], str], print_foo: Callable[[str], None]) -> None:
     """
     Function used to connect to game on server as a spectator.
     :param host: string with address to game server in IP:PORT format
@@ -94,7 +95,7 @@ def watch_game(host, input_foo, print_foo):
         sleep(0.5)
 
 
-def join_game(host, input_foo, print_foo):
+def join_game(host: str, input_foo: Callable[[str], str], print_foo: Callable[[str], None]) -> None:
     """
     Function used to connect to existing game on server as a guest.
     :param host: string with address to game server in IP:PORT format
@@ -108,7 +109,7 @@ def join_game(host, input_foo, print_foo):
     game_loop(game_id, my_name, host, input_foo, print_foo)
 
 
-def create_game(host, input_foo, print_foo):
+def create_game(host: str, input_foo: Callable[[str], str], print_foo: Callable[[str], None]) -> None:
     """
     Function used to create new game on game server and connect to it as a owner.
     :param host: string with address to game server in IP:PORT format
@@ -137,7 +138,8 @@ def create_game(host, input_foo, print_foo):
     game_loop(game_id, my_name, host, input_foo, print_foo)
 
 
-def game_loop(game_id, my_name, host, input_foo=input, print_foo=print):
+def game_loop(game_id: int, my_name: str, host: str,
+              input_foo: Callable[[str], str] = input, print_foo: Callable[[str], None] = print) -> None:
     """
     Function used to control input/output game loop with client-server
     :param game_id: integer with correct game id of game existing on game server
