@@ -39,7 +39,7 @@ def find_server(host, input_foo, print_foo):
     """
     while True:
         try:
-            response = requests.get(f"http://{host}/")
+            response = requests.get(f"http://{host}/", timeout=0.5)
             if response.status_code == 200:
                 print_foo("Connection to Game Server checked.")
                 break
@@ -56,19 +56,17 @@ def find_game(host, input_foo, print_foo):
     :param host: string with address to game server in IP:PORT format
     :param input_foo: functor with function used to get input from user
     :param print_foo: functor with function used to show output to user
-    :return: integer with correct game_id, integer with response status code 200,
-     list of string with not yet logged players
+    :return: integer with correct game_id, integer with response status code 200
     """
     status_code = 404
     game_id = -1
-    waiting_for = []
     while status_code != 200:
         game_id = int(input_foo("Enter ID of the game: "))
         response = requests.get(f"http://{host}/{game_id}")
         status_code = response.status_code
         if status_code != 200:
             print_foo("Game ID not valid.")
-    return game_id, status_code, waiting_for
+    return game_id, status_code
 
 
 def watch_game(host, input_foo, print_foo):
@@ -79,7 +77,7 @@ def watch_game(host, input_foo, print_foo):
     :param print_foo: functor with function used to show output to user
     """
     print_foo("Watching existing game!")
-    game_id, status_code, _ = find_game(host, input_foo, print_foo)
+    game_id, status_code = find_game(host, input_foo, print_foo)
     os.system("cls || clear")
     print_foo("Game ID correct. Game events will appear below:")
     last_show = None
@@ -104,7 +102,7 @@ def join_game(host, input_foo, print_foo):
     :param print_foo: functor with function used to show output to user
     """
     print_foo("Joining existing game!")
-    game_id, status_code, waiting_for = find_game(host, input_foo, print_foo)
+    game_id, status_code = find_game(host, input_foo, print_foo)
     print_foo("Game ID correct.")
     my_name = input_foo("Enter your name: ")
     game_loop(game_id, my_name, host, input_foo, print_foo)
@@ -122,7 +120,7 @@ def create_game(host, input_foo, print_foo):
     if how_many_players < 2 or how_many_players > 6:
         raise Exception('Wrong number of players entered!')
     initial_survivors = int(input_foo('How many survivors on start?: '))
-    if initial_survivors > 3:
+    if initial_survivors > 3 or initial_survivors < 1:
         raise Exception('Wrong number of survivors entered!')
     names = []
     my_name = input_foo('Enter your name: ')
@@ -165,7 +163,7 @@ def game_loop(game_id, my_name, host, input_foo=input, print_foo=print):
             printed = len(output)
 
             if '>' in output[-1]:
-                move = input_foo()
+                move = input_foo('')
                 response = requests.post(f"http://{host}/{game_id}/{my_name}?player_move={move}&access_token={token}")
                 crash_on_error(response)
                 action = True
