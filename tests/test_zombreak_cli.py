@@ -2,6 +2,7 @@ from time import sleep
 import zombreak_cli as client
 from tests.common import server, dumper_factory, address, helper_factory
 import tests.common as common
+import requests
 
 
 def test_sanity_check():
@@ -27,8 +28,9 @@ def test_find_server(server):
 
 
 def test_crash_on_error():
-    class DummyResponse:
+    class DummyResponse(requests.Response):
         def __init__(self, code):
+            requests.Response.__init__(self)
             self.status_code = code
 
     response = DummyResponse(200)
