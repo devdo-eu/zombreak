@@ -7,6 +7,7 @@ import asyncio
 from player.player_shelter import PlayerShelter
 import logic.game_state as game
 import uuid
+import os.path as path
 
 app = FastAPI()
 games_container = []
@@ -100,22 +101,24 @@ async def startup_event() -> None:
     games_container = []
 
 
-@app.get("/")
+@app.get("/js/{file}", include_in_schema=False)
+def get_javascript(file: str):
+    content = ''
+    if path.isfile(f'./html/js/{file}'):
+        with open(f'./html/js/{file}') as file:
+            content = file.read()
+            return HTMLResponse(content=content, status_code=200)
+    return HTMLResponse(content=content, status_code=400)
+
+
+@app.get("/", include_in_schema=False)
 async def read_root() -> HTMLResponse:
     """
     Method used to show welcome page of Macau game server.
     :return: HTML content
     """
-    html_content = """
-        <html>
-            <head>
-                <title>Zombreak Game Server</title>
-            </head>
-            <body>
-                <h1>Hello at Zombreak Game Server!</h1>
-            </body>
-        </html>
-        """
+    with open('./html/index.html') as file:
+        html_content = file.read()
     return HTMLResponse(content=html_content, status_code=200)
 
 

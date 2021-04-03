@@ -216,3 +216,12 @@ def test_get_game_log():
         response = tc.get("/250")
         assert response.status_code == 404
         assert response.json()['status'] == 'No game'
+
+
+def test_get_javascript():
+    with TestClient(app) as tc:
+        response = tc.get("/js/index.js")
+        assert response.status_code == 200
+
+        response = tc.get("/js/nonsense.js")
+        assert response.status_code == 400
