@@ -3,10 +3,28 @@ from logic.game_state import GameState
 from enums.zombie import ZombieType
 from logic.city_card import CityCard
 from player.player_shelter import PlayerShelter
+import uvicorn
+from multiprocessing import Process
+from time import sleep
+from zombreak_server import app
 
 
 outputs = []
 helper_move = [-1, -1]
+address = '127.0.0.1:5000'
+
+
+def serve(host, port):
+    uvicorn.run(app, host=host, port=port)
+
+
+@pytest.fixture(scope='session')
+def server():
+    proc = Process(target=serve, args=(address.split(":")[0], int(address.split(":")[1])), daemon=True)
+    proc.start()
+    sleep(0.5)
+    yield
+    proc.kill()
 
 
 @pytest.fixture
