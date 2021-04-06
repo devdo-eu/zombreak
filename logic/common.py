@@ -1,17 +1,34 @@
 from enums.zombie import ZombieType
 from enums.supply import Supply, SupplyType
+from collections.abc import Callable, Awaitable
+from typing import Any
 
 
-def is_loud(supply):
+def is_loud(supply: Supply) -> bool:
+    """
+    Helper function used to return information if given supply is a loud one.
+    :param supply: Supply enum with supply card chose to check
+    :return: True if supply is loud, False otherwise
+    """
     loud_supplies = [Supply.MEGAPHONE, Supply.FLARE_GUN, Supply.CHAINSAW, Supply.SWAP, Supply.SHOTGUN, Supply.GUN]
     return supply in loud_supplies
 
 
-def loud_obstacle(supply):
+def loud_obstacle(supply: Supply) -> bool:
+    """
+    Helper function used to return information if given obstacle is a loud one.
+    :param supply: Supply enum with obstacle card chose to check
+    :return:
+    """
     return supply in [Supply.ALARM, Supply.MINE_FILED]
 
 
-def check_type(supply: Supply):
+def check_type(supply: Supply) -> SupplyType:
+    """
+    Helper function used to translate Supply enum to SupplyType enum.
+    :param supply: Supply enum with card chose to check
+    :return: SupplyType of given Supply
+    """
     if supply in [Supply.ALARM, Supply.MINE_FILED, Supply.BARRICADES]:
         return SupplyType.DEFENCE
     elif supply in [Supply.RADIO, Supply.MEGAPHONE, Supply.FLARE_GUN]:
@@ -22,7 +39,13 @@ def check_type(supply: Supply):
         return SupplyType.COUNTER
 
 
-def put_supplies_on_graveyard(game_state, supply, obstacle=False):
+def put_supplies_on_graveyard(game_state, supply: Supply, obstacle: bool = False) -> None:
+    """
+    Helper function used to put given supply card on supply_graveyard list
+    :param game_state: GameState object with all game data inside
+    :param supply: Supply enum with card which should be put on graveyard
+    :param obstacle: flag indicator if given supply was obstacle inside shelter
+    """
     shelter = game_state.active_player
     shelter.print(f'{str(supply.value).capitalize()} has been destroyed!')
     if not obstacle:
@@ -32,13 +55,25 @@ def put_supplies_on_graveyard(game_state, supply, obstacle=False):
     game_state.supply_graveyard.append(supply)
 
 
-def put_zombie_on_graveyard(game_state, zombie_card):
+def put_zombie_on_graveyard(game_state, zombie_card) -> None:
+    """
+    Helper function used to put given city card on city_graveyard list.
+    :param game_state: GameState object with all game data inside
+    :param zombie_card: CityCard object with data about survivor or zombie
+    """
     shelter = game_state.active_player
     shelter.zombies.remove(zombie_card)
     game_state.city_graveyard.append(zombie_card)
 
 
-async def get_action(game_state, message, possible_actions):
+async def get_action(game_state, message: str, possible_actions: list) -> int:
+    """
+    Helper function used to get action from player for current state of game.
+    :param game_state: GameState object with all game data inside
+    :param message: string with message for player
+    :param possible_actions: list with all possible action for given GameState
+    :return: int value of chosen action
+    """
     shelter = game_state.active_player
     if len(possible_actions) == 1:
         return possible_actions[0]
@@ -51,7 +86,12 @@ async def get_action(game_state, message, possible_actions):
     return action
 
 
-def find_rivals_and_build_action_message(game_state):
+def find_rivals_and_build_action_message(game_state) -> tuple[str, list[str], list]:
+    """
+    Helper function used to build message for current player when there is a need to choose target for played card.
+    :param game_state: GameState object with all game data inside
+    :return: tuple with string message to be shown to player, list of possible actions and list of rivals
+    """
     shelter = game_state.active_player
     rivals, possible_actions = [], []
     choice_message = ''
@@ -65,7 +105,12 @@ def find_rivals_and_build_action_message(game_state):
     return choice_message, possible_actions, rivals
 
 
-def count_zombies(game_state):
+def count_zombies(game_state) -> tuple[bool, int]:
+    """
+    Helper function used to check if inside shelter is one or more big zombies and count of all lesser zombies.
+    :param game_state: GameState object with all game data inside
+    :return: tuple with bool flag if inside is big zombie and int value with sum of all lesser zombies inside shelter
+    """
     shelter = game_state.active_player
     big_inside = False
     lesser_counter = 0
@@ -77,7 +122,16 @@ def count_zombies(game_state):
     return big_inside, lesser_counter
 
 
-async def count_zombies_and_execute_function(game_state, message, execute, count=2):
+async def count_zombies_and_execute_function(game_state, message: str, execute: Callable[[Any], Awaitable[None]],
+                                             count: int = 2) -> None:
+    """
+    Helper function used to depending on the circumstances execute param function
+    or ask player on which zombie execute param function.
+    :param game_state: GameState object with all game data inside
+    :param message: string with message for player
+    :param execute: callable function with CityCard param
+    :param count: how many times function should be called
+    """
     shelter = game_state.active_player
     big_inside, lesser_counter = count_zombies(game_state)
     if len(shelter.zombies) == 0:
