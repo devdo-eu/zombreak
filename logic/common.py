@@ -18,7 +18,7 @@ def loud_obstacle(supply: Supply) -> bool:
     """
     Helper function used to return information if given obstacle is a loud one.
     :param supply: Supply enum with obstacle card chose to check
-    :return:
+    :return: True if obstacle is loud, False otherwise
     """
     return supply in [Supply.ALARM, Supply.MINE_FILED]
 
@@ -44,7 +44,7 @@ def put_supplies_on_graveyard(game_state, supply: Supply, obstacle: bool = False
     Helper function used to put given supply card on supply_graveyard list
     :param game_state: GameState object with all game data inside
     :param supply: Supply enum with card which should be put on graveyard
-    :param obstacle: flag indicator if given supply was obstacle inside shelter
+    :param obstacle: bool flag indicator if given supply was obstacle inside shelter
     """
     shelter = game_state.active_player
     shelter.print(f'{str(supply.value).capitalize()} has been destroyed!')
