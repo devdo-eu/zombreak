@@ -8,8 +8,8 @@ def play_weapon(game_state, weapon: Supply, strong: bool = False, destroyed: boo
     Function used to control of play of any weapon card.
     :param game_state: GameState object with all game data inside
     :param weapon: Supply enum with played card
-    :param strong: Bool flag indicator if this weapon can kill big zombie
-    :param destroyed: Bool flag indicator if this weapon will be destroyed after current use
+    :param strong: bool flag indicator if this weapon can kill big zombie
+    :param destroyed: bool flag indicator if this weapon will be destroyed after current use
     """
     shelter = game_state.active_player
     used = False
@@ -36,7 +36,7 @@ def kill_zombie(game_state, supply: Supply, zombie_card, destroyed: bool) -> Non
     :param game_state: GameState object with all game data inside
     :param supply: Supply enum with played card, used to kill zombie
     :param zombie_card: CityCard object with zombie on top
-    :param destroyed: Bool flag indicator if supply will be destroyed after current use
+    :param destroyed: bool flag indicator if supply will be destroyed after current use
     """
     shelter = game_state.active_player
     zombie = zombie_card.top

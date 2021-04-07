@@ -46,17 +46,22 @@ class GameState:
         self.finished = False
 
     @property
-    def players_still_in_game(self):
+    def players_still_in_game(self) -> list:
+        """:return: list with player still in game."""
         return [player for player in self.players if not player.defeated]
 
     @property
-    def active_player_active_zombies(self):
+    def active_player_active_zombies(self) -> bool:
+        """:return: bool indicator if player has active zombie inside shelter."""
         for zombie in self.active_player.zombies:
             if zombie.active:
                 return True
         return False
 
-    def prepare_city_deck(self):
+    def prepare_city_deck(self) -> None:
+        """
+        Method used to prepare city deck for new game.
+        """
         horde = [CityCard(ZombieType.HORDE) for _ in range(2)]
         zombie = [CityCard(ZombieType.ZOMBIE) for _ in range(23)]
         fast = [CityCard(ZombieType.FAST) for _ in range(18)]
@@ -65,7 +70,11 @@ class GameState:
         shuffle(deck)
         self.city_deck = deck
 
-    def get_city_card(self):
+    def get_city_card(self) -> CityCard or None:
+        """
+        Method used to get card from top of city deck.
+        :return: CityCard from top of deck or None if city deck if empty
+        """
         if len(self.city_deck) < 1:
             return None
         card = self.city_deck.pop(0)
@@ -73,13 +82,20 @@ class GameState:
             self.final_attack = True
         return card
 
-    def shuffle_supply_graveyard(self):
+    def shuffle_supply_graveyard(self) -> None:
+        """
+        Method used to reshuffle supply graveyard and append this cards to supply deck.
+        """
         new_supplies = self.supply_graveyard
         shuffle(new_supplies)
         self.supply_graveyard = []
         self.supply_deck = self.supply_deck + new_supplies
 
-    def get_supply_card(self):
+    def get_supply_card(self) -> Supply or None:
+        """
+        Method used to get card from top of supply deck
+        :return: Supply enum with card from top of supply deck or None if supply deck is empty
+        """
         if len(self.supply_deck) < 1:
             self.shuffle_supply_graveyard()
         if len(self.supply_deck) < 1 or (self.final_attack and self.last_supplies_taken):
@@ -87,7 +103,10 @@ class GameState:
         card = self.supply_deck.pop(0)
         return card
 
-    def prepare_supply_deck(self):
+    def prepare_supply_deck(self) -> None:
+        """
+        Method used to prepare supply deck for new game.
+        """
         quantity = [2, 2, 4, 4, 4, 3, 2, 6, 7, 2, 2, 2, 2, 6, 4, 3]
         supply_deck = []
         for index, supply in enumerate(Supply):
@@ -95,7 +114,10 @@ class GameState:
         shuffle(supply_deck)
         self.supply_deck = supply_deck
 
-    def zombie_show_up(self):
+    def zombie_show_up(self) -> None:
+        """
+        Method used to control of process of zombie appearing in city.
+        """
         card = self.get_city_card()
         if card is None:
             return
@@ -116,7 +138,11 @@ class GameState:
         self.active_player.print(f'{str(card.top.value).capitalize()} has entered "{self.active_player.name}" shelter!')
         self.active_player.zombies.append(card)
 
-    def event_horde(self, second=False):
+    def event_horde(self, second: bool = False) -> None:
+        """
+        Method used to control of horde zombie event.
+        :param second: bool flag indicator if this is second horde event
+        """
         index = self.players_still_in_game.index(self.active_player)
         helper_table = self.players_still_in_game + self.players_still_in_game
         helper_table = helper_table[index + 1: index + len(self.players_still_in_game) + 1]
@@ -138,7 +164,10 @@ class GameState:
                 player.print(f'{str(card.top.value).capitalize()} has entered {player.name} shelter!')
                 player.zombies.append(card)
 
-    def get_supplies(self):
+    def get_supplies(self) -> None:
+        """
+        Method used to replenish with supplies player hand at the end of active player round.
+        """
         how_many = len(self.active_player.supplies)
         for _ in range(how_many, 3):
             card = self.get_supply_card()
@@ -148,15 +177,26 @@ class GameState:
         if self.final_attack:
             self.last_supplies_taken = True
 
-    async def activate_obstacle(self, obstacle):
+    async def activate_obstacle(self, obstacle: Supply) -> None:
+        """
+        Method used to execute logic of obstacle card at defending phase of active player round.
+        :param obstacle: Supply enum with used card
+        """
         await activate_obstacle[obstacle](self)
 
-    def clean_up_shelter(self, shelter):
+    def clean_up_shelter(self, shelter: PlayerShelter) -> None:
+        """
+        Method used to purge all card list of defeated player.
+        :param shelter: PlayerShelter object of defeated player
+        """
         self.supply_graveyard += shelter.supplies + shelter.obstacles
         self.city_graveyard += shelter.zombies + shelter.survivors
         shelter.supplies, shelter.obstacles, shelter.zombies, shelter.survivors = [], [], [], []
 
-    async def end_active_player_turn(self):
+    async def end_active_player_turn(self) -> None:
+        """
+        Method used to control of end current round process. This method get chooses next active player.
+        """
         index = self.players_still_in_game.index(self.active_player)
         loud_defence = await self.defend_with_obstacles()
         self.zombies_eats_survivors()
@@ -167,7 +207,10 @@ class GameState:
             helper_table = self.players_still_in_game + self.players_still_in_game
             self.active_player = helper_table[index + 1]
 
-    def check_if_game_continues(self):
+    def check_if_game_continues(self) -> None:
+        """
+        Method used to check if there is already a winner of the game or if game should continue.
+        """
         zombies_in_game = 0
         still_in_game = 0
         for player in self.players:
@@ -177,7 +220,13 @@ class GameState:
         if (zombies_in_game == 0 and self.final_attack) or still_in_game < 2:
             self.finished = True
 
-    def move_aftermath(self, index, loud_defence):
+    def move_aftermath(self, index: int, loud_defence: bool) -> int:
+        """
+        Method used to execute some logic related with end of active player round.
+        :param index: int with order number inside players list of current active player
+        :param loud_defence: bool flag indicator if played defences was loud
+        :return: int with order number inside players list of next active player
+        """
         if len(self.active_player.survivors) == 0:
             self.active_player.print(f'No more living survivors inside "{self.active_player.name}" shelter...')
             self.active_player.defeated = True
@@ -191,7 +240,10 @@ class GameState:
         self.clean_up_table()
         return index
 
-    def zombies_eats_survivors(self):
+    def zombies_eats_survivors(self) -> None:
+        """
+        Method used to execute logic related to loss of survivor at defending phase of active player round.
+        """
         shelter = self.active_player
         for zombie in shelter.zombies:
             if len(shelter.survivors) > 0 and zombie.active:
@@ -201,7 +253,11 @@ class GameState:
                               f'{len(shelter.survivors)} left inside "{shelter.name}" shelter')
                 self.city_graveyard.append(card)
 
-    async def defend_with_obstacles(self):
+    async def defend_with_obstacles(self) -> bool:
+        """
+        Method used to control process of defending with obstacles inside active player shelter.
+        :return: bool flag indicator if used defences was loud
+        """
         loud_defence = False
         obstacles = copy(self.active_player.obstacles)
         for obstacle in obstacles:
@@ -213,7 +269,10 @@ class GameState:
                         loud_defence = True
         return loud_defence
 
-    async def play_round(self):
+    async def play_round(self) -> None:
+        """
+        Method used to control of play of one player round and all actions related with it.
+        """
         shelter = self.active_player
         shelter.card_used_or_discarded = False
         opening_supplies = len(shelter.supplies)
@@ -249,7 +308,10 @@ class GameState:
                 turn_end = True
         await self.end_active_player_turn()
 
-    def clean_up_table(self):
+    def clean_up_table(self) -> None:
+        """
+        Method used to purge all card list of all defeated players.
+        """
         for player in self.players:
             if len(player.survivors) == 0:
                 player.defeated = True
@@ -257,7 +319,11 @@ class GameState:
             if player.defeated and not_clean:
                 self.clean_up_shelter(player)
 
-    async def ask_player_what_move(self):
+    async def ask_player_what_move(self) -> tuple[int, list[str]]:
+        """
+        Method used to get chosen action from active player.
+        :return: tuple with int with chosen action and list of string of all possible actions
+        """
         shelter = self.active_player
         possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'What do you want to do?\n'
@@ -275,7 +341,12 @@ class GameState:
         action = await common.get_action(self, question + '> ', possible_actions)
         return action, possible_actions
 
-    async def discard_supplies_move(self, turn_end):
+    async def discard_supplies_move(self, turn_end: bool) -> bool:
+        """
+        Method used to control logic of discard card move of active player
+        :param turn_end: bool flag indicator if turn of player can be ended
+        :return: bool flag indicator if turn of player can be ended
+        """
         shelter = self.active_player
         possible_actions = [str(number) for number in range(len(shelter.supplies) + 1)]
         question = 'Which supply you want to discard?\n'
@@ -297,7 +368,12 @@ class GameState:
             turn_end = True
         return turn_end
 
-    def setup_game(self, players_names, initial_survivors=2):
+    def setup_game(self, players_names: list[str], initial_survivors: int = 2) -> None:
+        """
+        Method used to setup game and prepare it to be played.
+        :param players_names: list with strings with names of all players in game
+        :param initial_survivors: int with number of survivors on start for every player
+        """
         self.prepare_city_deck()
         self.prepare_supply_deck()
         self.players = []
@@ -313,7 +389,11 @@ class GameState:
             self.players.append(shelter)
         self.active_player = self.players[0]
 
-    async def play_game(self):
+    async def play_game(self) -> list[str]:
+        """
+        Method used to control all rounds of one game
+        :return: list with strings with names of game winners
+        """
         while not self.finished:
             await self.play_round()
         winners = self.get_winners()
@@ -324,7 +404,11 @@ class GameState:
                 player.print('All shelters destroyed. Zombies won!')
         return winners
 
-    def get_winners(self):
+    def get_winners(self) -> list[str]:
+        """
+        Helper method used to determine the winner from among the surviving players
+        :return: list with string with names of game winners
+        """
         winners = []
         survivors_amount = []
         for shelter in self.players:
