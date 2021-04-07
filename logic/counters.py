@@ -4,7 +4,11 @@ from logic.common import find_rivals_and_build_action_message, put_supplies_on_g
 from logic.common import count_zombies_and_execute_function
 
 
-async def play_sacrifice(game_state):
+async def play_sacrifice(game_state) -> None:
+    """
+    Function used to control of play of SACRIFICE card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     survivor_card = shelter.survivors[0]
     shelter.survivors.remove(survivor_card)
@@ -21,12 +25,20 @@ async def play_sacrifice(game_state):
     put_supplies_on_graveyard(game_state, Supply.SACRIFICE)
 
 
-async def play_drone(game_state):
+async def play_drone(game_state) -> None:
+    """
+    Function used to control of play of DRONE card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     if len(shelter.zombies) == 0:
         shelter.print(f'You cannot use {Supply.DRONE.value} for nothing...')
     else:
-        async def use_drone(zombie):
+        async def use_drone(zombie) -> None:
+            """
+            Helper function used to play DRONE card and get chosen action from player.
+            :param zombie: CityCard object with zombie on top.
+            """
             choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
             shelter.print(f'One of survivors used {Supply.DRONE.value} to lure {zombie.top.value} out...')
             message = f'Where {zombie.top.value} will be lured?\n' + choice_message
@@ -41,7 +53,11 @@ async def play_drone(game_state):
         put_supplies_on_graveyard(game_state, Supply.DRONE)
 
 
-async def play_chainsaw(game_state):
+async def play_chainsaw(game_state) -> None:
+    """
+    Function used to control of play of CHAINSAW card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     rivals = []
     choice_message = ''
@@ -65,7 +81,11 @@ async def play_chainsaw(game_state):
     put_supplies_on_graveyard(game_state, Supply.CHAINSAW)
 
 
-async def play_takeover(game_state):
+async def play_takeover(game_state) -> None:
+    """
+    Function used to control of play of TAKEOVER card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
     message = 'From which shelter lure a survivor to join us?\n' + choice_message
@@ -81,7 +101,11 @@ async def play_takeover(game_state):
     put_supplies_on_graveyard(game_state, Supply.TAKEOVER)
 
 
-async def play_swap(game_state):
+async def play_swap(game_state) -> None:
+    """
+    Function used to control of play of SWAP card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
     message = 'Which player do you want to swap shelters with?\n' + choice_message
@@ -94,7 +118,11 @@ async def play_swap(game_state):
     put_supplies_on_graveyard(game_state, Supply.SWAP)
 
 
-async def play_lure_out(game_state):
+async def play_lure_out(game_state) -> None:
+    """
+    Function used to control of play of LURE OUT card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     choice_message, possible_actions, rivals = find_rivals_and_build_action_message(game_state)
     used = False
@@ -117,7 +145,11 @@ async def play_lure_out(game_state):
         message = 'What survivors should do [0/1]?\n[0]: lure big zombie out of shelter\n' \
                   '[1]: lure lesser zombie out of shelter\n>'
 
-        async def lure_out(zombie_card):
+        async def lure_out(zombie_card) -> None:
+            """
+            Helper function used to play LURE OUT card and get chosen action from player.
+            :param zombie_card: CityCard object with zombie on top.
+            """
             shelter.print(f'One of survivors used {Supply.LURE_OUT.value} to lure {zombie_card.top.value} out...')
             message = f'Where {zombie_card.top.value} will be lured?\n' + choice_message
             action = await get_action(game_state, message, possible_actions)

@@ -3,7 +3,14 @@ from enums.supply import Supply
 from logic.common import put_zombie_on_graveyard, put_supplies_on_graveyard, is_loud, count_zombies, get_action
 
 
-def play_weapon(game_state, weapon, strong=False, destroyed=True):
+def play_weapon(game_state, weapon: Supply, strong: bool = False, destroyed: bool = True) -> None:
+    """
+    Function used to control of play of any weapon card.
+    :param game_state: GameState object with all game data inside
+    :param weapon: Supply enum with played card
+    :param strong: Bool flag indicator if this weapon can kill big zombie
+    :param destroyed: Bool flag indicator if this weapon will be destroyed after current use
+    """
     shelter = game_state.active_player
     used = False
     for supply in shelter.supplies:
@@ -23,7 +30,14 @@ def play_weapon(game_state, weapon, strong=False, destroyed=True):
         put_supplies_on_graveyard(game_state, weapon)
 
 
-def kill_zombie(game_state, supply, zombie_card, destroyed):
+def kill_zombie(game_state, supply: Supply, zombie_card, destroyed: bool) -> None:
+    """
+    Helper function used to control process of killing zombie
+    :param game_state: GameState object with all game data inside
+    :param supply: Supply enum with played card, used to kill zombie
+    :param zombie_card: CityCard object with zombie on top
+    :param destroyed: Bool flag indicator if supply will be destroyed after current use
+    """
     shelter = game_state.active_player
     zombie = zombie_card.top
     shelter.print(f'One of survivors killed {zombie.value} with {supply.value}!')
@@ -34,18 +48,30 @@ def kill_zombie(game_state, supply, zombie_card, destroyed):
         put_supplies_on_graveyard(game_state, supply)
 
 
-async def play_axe(game_state):
+async def play_axe(game_state) -> None:
+    """
+    Function used to control of play of AXE card.
+    :param game_state: GameState object with all game data inside
+    """
     if len(game_state.active_player.zombies) > 0:
         play_weapon(game_state, Supply.AXE)
     else:
         game_state.active_player.print(f'You cannot play {Supply.AXE.value} for nothing!')
 
 
-async def play_gun(game_state):
+async def play_gun(game_state) -> None:
+    """
+    Function used to control of play of GUN card.
+    :param game_state: GameState object with all game data inside
+    """
     play_weapon(game_state, Supply.GUN)
 
 
-async def play_shotgun(game_state):
+async def play_shotgun(game_state) -> None:
+    """
+    Function used to control of play of SHOTGUN card.
+    :param game_state: GameState object with all game data inside
+    """
     big_inside, lesser_counter = count_zombies(game_state)
     if big_inside and lesser_counter == 0:
         play_weapon(game_state, Supply.SHOTGUN, strong=True)
@@ -67,7 +93,11 @@ async def play_shotgun(game_state):
             play_weapon(game_state, Supply.SHOTGUN)
 
 
-async def play_sniper_rifle(game_state):
+async def play_sniper_rifle(game_state) -> None:
+    """
+    Function used to control of play of SNIPER card.
+    :param game_state: GameState object with all game data inside
+    """
     shelter = game_state.active_player
     if len(game_state.city_deck) > 0:
         top_card = game_state.city_deck[0]
